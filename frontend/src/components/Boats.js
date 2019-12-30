@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Image, Segment } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import {A} from 'hookrouter';
 
 const query = (page, boatsPerPage) => gql`{
   boats(page:${page}, boatsPerPage:${boatsPerPage}) {
@@ -10,7 +11,7 @@ const query = (page, boatsPerPage) => gql`{
     hasPreviousPage
     boats{
       id
-      oga_num
+      oga_no
       name
       image
       year
@@ -47,7 +48,7 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
       <Card.Content>
         <Card.Header>
           <Segment.Group horizontal>
-            <Segment>{boat.name} ({boat.oga_num})</Segment>
+            <Segment>{boat.name} ({boat.oga_no})</Segment>
             <Segment></Segment>
             <Segment>{boat.year}</Segment>
           </Segment.Group>
@@ -68,7 +69,7 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
           Designer <span className='designer'>{boat.class.designer.name}</span>
         </Card.Meta>
         <Card.Description>
-          View all Details
+          <A href={"/boats/"+boat.oga_no}>View all Details</A>
         </Card.Description>
       </Card.Content>
     </Card>

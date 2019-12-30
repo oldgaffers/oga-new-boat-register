@@ -5,12 +5,14 @@ import React from 'react';
 import Main from "./components/Main";
 import AddBoat from "./components/AddBoat";
 import BrowseBoats from "./components/BrowseBoats";
+import Boat from "./components/Boat";
 import {useRoutes} from 'hookrouter';
 
 const routes = {
   "/": () => <Main />,
   "/browse": () => <BrowseBoats />,
-  "/add": () => <AddBoat />
+  "/add": () => <AddBoat />,
+  "/boats/:id": ({id}) => <Boat id={id}/>
 };
 
 const App = () => {

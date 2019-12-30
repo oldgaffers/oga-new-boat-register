@@ -1,7 +1,7 @@
     SELECT
-        n.entity_id as id,
+        n.entity_id,
         n.field_boat_name_value as name,
-        o.field_boat_oga_no_value as oga_num,
+        o.field_boat_oga_no_value as oga_no,
         y.field_year_built_value as year,
         p.field_place_built_value as whereBuilt,
         h.field_home_port_value as homePort,
@@ -10,7 +10,7 @@
         d.field_designer_target_id as designer,
         IFNULL(w.field_designer_name_value,'') as designer_name,
         r.field_rig_type_tid as rig_type,
-        IFNULL(c.field_design_class_tid, 0) as class,
+        c.field_design_class_tid as design_class,
         f.uri
     FROM 
     field_data_field_boat_name n
