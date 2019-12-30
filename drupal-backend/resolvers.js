@@ -25,21 +25,32 @@ const options = {
 }
 
 const getClass = async (db, boat) => {
+   console.log(boat);
    let name = `${boat.name} Class`;
    let description = "";
-   const r = await db.query(`
-      SELECT name, description 
-      FROM taxonomy_term_data WHERE tid IN (?,?)
-      `,
-      [boat.rig_type, boat.class]
-   );
    if (boat.class !== 0) {
-      name = r[1].name;
-      description = r[1].description;
+      const r = await db.query(`
+      SELECT name, description 
+      FROM taxonomy_term_data WHERE tid IN (?)
+      `,
+      [boat.class]
+      );
+      name = r[0].name;
+      description = r[0].description;
+   }
+   let rigType = '';
+   if (boat.rigType) {
+      const r = await db.query(`
+      SELECT name, description 
+      FROM taxonomy_term_data WHERE tid IN (?)
+      `,
+      [boat.rigType]
+      );
+      rigType = r[0].name;
    }
    return {
       name: name,
-      rigType: r[0].name,
+      rigType: rigType,
       description: description,
       designer: { name: boat.designer_name }
    };
@@ -112,6 +123,7 @@ const pagedBoats = async (_, { page, boatsPerPage }) => {
    if(page) {
       start = (page-1)*pageSize;
    }
+   console.log(start, pageSize);
    const l = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
    const boats = await processBoats(db, l);
    const hasNextPage = start + pageSize < totalCount;
@@ -122,6 +134,7 @@ const pagedBoats = async (_, { page, boatsPerPage }) => {
       hasNextPage,
       hasPreviousPage
    };
+   console.log(result);
    return result;
 };
 
