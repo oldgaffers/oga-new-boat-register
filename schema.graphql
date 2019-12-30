@@ -1,8 +1,7 @@
 type Query {
    greeting:String
    classes:[ClassOfBoat]
-   boats:[Boat]
-   boats2(first: Int, after: ID):BoatsConnection
+   boats(page:Int, boatsPerPage:Int):BoatPages
    owners:[Owner]
    ownerships:[OwnerShip]
    ownershipsByBoat(id: ID!):[OwnerShip]
@@ -33,29 +32,13 @@ type ClassOfBoat {
    designer:Designer
 }
 
-type BoatsConnection {
+type BoatPages {
     # The total number of boats
     totalCount: Int!
-    # The edges for each of the boats.
-    edges: [BoatsEdge!]
-    # A list of the friends, as a convenience when edges are not needed.
     boats: [Boat!]
     # Information for paginating this connection
-    pageInfo: PageInfo!
-}
-
-# An edge object for boats
-type BoatsEdge {
-    # A cursor used for pagination
-    cursor: ID!
-    # The boat represented by this friendship edge
-    node: Boat
-}
-# Information for paginating this connection
-type PageInfo {
-    startCursor: ID!
-    endCursor: ID!
     hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
 }
 
 type OwnerShip {

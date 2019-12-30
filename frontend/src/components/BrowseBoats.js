@@ -20,6 +20,10 @@ const BrowseBoats = () => {
 
   const [activePage, setActivePage] = useState(1);
 
+  const onLoad = (totalCount) => {
+    console.log('onLoad', totalCount)
+  }
+
   const onChange = (_, pageInfo) => {
     setActivePage(pageInfo.activePage);
     console.log(pageInfo);
@@ -30,7 +34,7 @@ const BrowseBoats = () => {
     <TopMenu/>
     <Header as="h1">Browse Boats</Header>
     <CardGroup>
-      <Boats pageSize={8} />
+      <Boats page={activePage} boatsPerPage={8} onLoad={onLoad} />
     </CardGroup>
     <Divider />
     <Container>

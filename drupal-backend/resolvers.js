@@ -86,8 +86,6 @@ const processBoats = async (db, l) => {
    return boats;
 }
 
-const boatQuery2 = "SELECT count(*) FROM node WHERE type='boat' AND status=1";
-
 const numBoats = async (db) => {
    const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat'");
    return c[0].num;
@@ -103,88 +101,32 @@ const numUnpublishedBoats = async (db) => {
    return c[0].num;
 }
 
-const allBoatsCursor = async (_, { after, first }) => {
+const pagedBoats = async (_, { page, boatsPerPage }) => {
    const db = makeDb(options);
-   if (first < 0) {
-      throw new UserInputError('First must be positive');
-   }
    const totalCount = await numPublishedBoats(db);
    let start = 0;
-   let after_clause = '';
-   if (after !== undefined) {
-      const buff = Buffer.from(after, 'base64');
-      const afterId = buff.toString('ascii');
-      console.log('after', afterId);
-      const ar = await db.query("SELECT entity_id FROM field_data_field_boat_name WHERE entity_id=?", [afterId]);
-      if(ar.length===0) {
-         throw new UserInputError('After does not exist');
-      }
-      after_clause = `AND n.entity_id > ${afterId}`
+   let pageSize = totalCount;
+   if(boatsPerPage) {
+      pageSize = boatsPerPage;
    }
-   let l = [];
-   if(first === undefined) {
-      l = await db.query(`${boatQuery} ${after_clause}`);
-   } else {
-      l = await db.query(`${boatQuery} ${after_clause} LIMIT ${start},${first}`);
+   if(page) {
+      start = (page-1)*pageSize;
    }
+   const l = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
    const boats = await processBoats(db, l);
-   let endCursor;
-   const edges = boats.map((boat) => {
-      const buffer = Buffer.from(`${boat.id}`);
-      endCursor = buffer.toString('base64');
-      return ({
-         cursor: endCursor,
-         node: boat,
-      });
-   });
-   const hasNextPage = start + first < totalCount;
-   const pageInfo = endCursor !== undefined ?
-      {
-         endCursor,
-         hasNextPage,
-      } :
-      {
-         hasNextPage,
-      };
+   const hasNextPage = start + pageSize < totalCount;
+   const hasPreviousPage = page>1;
    const result = {
       boats,
-      edges,
-      pageInfo,
       totalCount,
+      hasNextPage,
+      hasPreviousPage
    };
    return result;
 };
 
-const old = async (_, args) => {
-   const db = makeDb(options);
-   const first = 0;
-   const count = args.first;
-   let l = await db.query(`${boatQuery} LIMIT ${first},${count}`);
-   const c = await db.query(boatQuery2);
-   console.log('total', c);
-   const boats = await processBoats(db, l);
-   return {
-      totalCount: c[0].totalCount,
-      edges: {
-         cursor: '',
-         node: null
-      },
-      boats: boats,
-      pageInfo: {
-         startCursor: '',
-         endCursor: '',
-         hasNextPage: false
-      }
-   };
-}
-
 const Query = {
-   boats2: allBoatsCursor,
-   boats: async () => {
-      const db = makeDb(options);
-      let l = await db.query(boatQuery);
-      return await processBoats(db, l);
-   }
+   boats: pagedBoats
 }
 
 const Mutation = {

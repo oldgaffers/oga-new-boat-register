@@ -3,8 +3,8 @@ import { Card, Image, Segment } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 
-const query = (pageSize) => gql`{
-  boats2(first:${pageSize}) {
+const query = (page, boatsPerPage) => gql`{
+  boats(page:${page}, boatsPerPage:${boatsPerPage}) {
     boats{
       id
       oga_num
@@ -25,14 +25,16 @@ const query = (pageSize) => gql`{
 // use this for graphQL enums
 const capitalise = (s) => s.toLowerCase().replace(/^\w/, c => c.toUpperCase());
 
-const Boats = ({pageSize}) => {
+const Boats = ({page, boatsPerPage, onLoad}) => {
 
-  const { loading, error, data } = useQuery(query(pageSize));
+  const { loading, error, data } = useQuery(query(page, boatsPerPage));
 
   if (loading) return <p>Loading...</p>
-  if (error) return <p>Error :(</p>;
+  if (error) return <p>Error :(TBD)</p>;
 
-  return data.boats2.boats.map((boat) => (
+  if(onLoad) onLoad(data.totalCount);
+
+  return data.boats.boats.map((boat) => (
     <Card key={boat.id}>
       <Image src={boat.image} wrapped ui={false} />
       <Card.Content>
