@@ -1,0 +1,102 @@
+type Query {
+   greeting:String
+   classes:[ClassOfBoat]
+   boats:[Boat]
+   boats2(first: Int, after: ID):BoatsConnection
+   owners:[Owner]
+   ownerships:[OwnerShip]
+   ownershipsByBoat(id: ID!):[OwnerShip]
+}
+
+type Mutation {
+   addBoat(name:String, class:String): Boat
+}
+
+type Boat {
+   id:ID!
+   oga_num:Int
+   name:String
+   image:String
+   year:Int
+   previousNames:String
+   class:ClassOfBoat
+   engineStatus:EngineStatus
+   builder:Builder
+   currentOwnership:[OwnerShip]
+}
+
+type ClassOfBoat {
+   id:ID!
+   name:String
+   rigType:RigType
+   mainsailType:SailType
+   designer:Designer
+}
+
+type BoatsConnection {
+    # The total number of boats
+    totalCount: Int!
+    # The edges for each of the boats.
+    edges: [BoatsEdge!]
+    # A list of the friends, as a convenience when edges are not needed.
+    boats: [Boat!]
+    # Information for paginating this connection
+    pageInfo: PageInfo!
+}
+
+# An edge object for boats
+type BoatsEdge {
+    # A cursor used for pagination
+    cursor: ID!
+    # The boat represented by this friendship edge
+    node: Boat
+}
+# Information for paginating this connection
+type PageInfo {
+    startCursor: ID!
+    endCursor: ID!
+    hasNextPage: Boolean!
+}
+
+type OwnerShip {
+   owner:Owner
+   sixtyFourths:Int
+}
+
+type Owner {
+   id:ID!
+   name:String
+}
+
+type Builder {
+   id:ID!
+   name:String
+}
+
+type Designer {
+   id:ID!
+   name:String
+}
+
+enum RigTypeOld {
+   SLOOP,
+   CUTTER,
+   KETCH,
+   YAWL
+   SCHOONER
+}
+
+scalar RigType
+
+enum SailType {
+   BERMUDAN,
+   GAFF,
+   GUNTER,
+   JUNK,
+   LUG,
+   LATEEN,
+   SPRIT,
+   SQUARE
+}
+
+enum EngineStatus { INBOARD, OUTBOARD, NONE }
