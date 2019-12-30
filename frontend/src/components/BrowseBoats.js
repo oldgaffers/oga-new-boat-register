@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+
 import ApolloClient from "apollo-client";
 import { ApolloProvider } from '@apollo/react-hooks';
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { createHttpLink } from "apollo-link-http";
 import Boats from './Boats.js';
-import { CardGroup, Header } from 'semantic-ui-react';
+import { CardGroup, Container, Divider, Header, Pagination } from 'semantic-ui-react';
 import TopMenu from './TopMenu.js';
 
 const client = new ApolloClient({
@@ -16,13 +17,29 @@ const client = new ApolloClient({
 });
 
 const BrowseBoats = () => {
+
+  const [activePage, setActivePage] = useState(1);
+
+  const onChange = (_, pageInfo) => {
+    setActivePage(pageInfo.activePage);
+    console.log(pageInfo);
+  };
+
   return (
   <ApolloProvider client={client}>
     <TopMenu/>
     <Header as="h1">Browse Boats</Header>
     <CardGroup>
-      <Boats/>
+      <Boats pageSize={8} />
     </CardGroup>
+    <Divider />
+    <Container>
+      <Pagination 
+      activePage={activePage}
+      onPageChange={onChange}
+      totalPages={10}
+       />
+    </Container>
   </ApolloProvider>
   );
 };

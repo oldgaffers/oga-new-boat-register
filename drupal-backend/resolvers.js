@@ -86,34 +86,29 @@ const processBoats = async (db, l) => {
    return boats;
 }
 
-const boatQuery2 = `
-SELECT COUNT(*) as totalCount
-FROM 
-field_data_field_boat_name n
-JOIN field_data_field_designer d ON d.entity_id = n.entity_id
-JOIN field_data_field_boat_oga_no o ON o.entity_id = n.entity_id
-JOIN field_data_field_year_built y ON y.entity_id = n.entity_id
-JOIN field_data_field_boat_oga_no i ON i.entity_id = n.entity_id
-JOIN field_data_field_builder b ON b.entity_id = n.entity_id
-JOIN field_data_field_rig_type r ON r.entity_id = n.entity_id
-JOIN boats p ON p.boat_oga_no = o.field_boat_oga_no_value
-LEFT JOIN (
-SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand())
-FROM field_data_field_boat_image GROUP BY entity_id
-) z ON z.entity_id = n.entity_id
-LEFT JOIN file_managed f ON f.fid=z.fid
-LEFT JOIN field_data_field_design_class c ON c.entity_id = n.entity_id
-JOIN field_data_field_builder_name x ON x.entity_id=b.field_builder_target_id
-JOIN field_data_field_designer_name w ON w.entity_id=d.field_designer_target_id
-WHERE p.boat_published = 'on'`;
+const boatQuery2 = "SELECT count(*) FROM node WHERE type='boat' AND status=1";
+
+const numBoats = async (db) => {
+   const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat'");
+   return c[0].num;
+}
+
+const numPublishedBoats = async (db) => {
+   const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=1");
+   return c[0].num;
+}
+
+const numUnpublishedBoats = async (db) => {
+   const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=0");
+   return c[0].num;
+}
 
 const allBoatsCursor = async (_, { after, first }) => {
    const db = makeDb(options);
    if (first < 0) {
       throw new UserInputError('First must be positive');
    }
-   const c = await db.query(boatQuery2);
-   const totalCount = c[0].totalCount;
+   const totalCount = await numPublishedBoats(db);
    let start = 0;
    let after_clause = '';
    if (after !== undefined) {

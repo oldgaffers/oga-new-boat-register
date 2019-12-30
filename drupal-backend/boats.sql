@@ -18,7 +18,7 @@
     JOIN field_data_field_boat_oga_no i ON i.entity_id = n.entity_id
     JOIN field_data_field_builder b ON b.entity_id = n.entity_id
     JOIN field_data_field_rig_type r ON r.entity_id = n.entity_id
-    JOIN boats p ON p.boat_oga_no = o.field_boat_oga_no_value
+    JOIN node ON node.nid = n.entity_id
     LEFT JOIN (
         SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand())
         FROM field_data_field_boat_image GROUP BY entity_id
@@ -27,4 +27,4 @@
     LEFT JOIN field_data_field_design_class c ON c.entity_id = n.entity_id
     JOIN field_data_field_builder_name x ON x.entity_id=b.field_builder_target_id
     JOIN field_data_field_designer_name w ON w.entity_id=d.field_designer_target_id
-    WHERE p.boat_published = 'on'
+    WHERE node.status = 1
