@@ -137,28 +137,42 @@ const pagedBoats = async (_, { page, boatsPerPage }) => {
    return result;
 };
 
-/*
-    LEFT JOIN field_data_field_builder_name x ON x.entity_id=b.field_builder_target_id
-    LEFT JOIN field_data_field_designer_name w ON w.entity_id=d.field_designer_target_id
-
-*/
 const Query = {
    boats: pagedBoats,
    boat: async (_, {id}) => {
       const db = makeDb(options);
-      const l = await db.query(buildQuery(id));
-      const b = l[0];
+      let l = await db.query(buildQuery(id));
+      // only take the non-null keys from the database
+      const b = {};
+      Object.keys(l[0]).forEach(key => {
+         const val = l[0][key];
+         if(val) {
+            b[key] = val;
+         }
+      });
       b.id = b.oga_no;
-      builder = await db.query("SELECT IFNULL(field_builder_name_value,'') as name FROM field_data_field_builder_name WHERE entity_id=?", [b.builder]);
-      if(builder.length>0) {
-         b.builder = {name: builder[0].name };
+      l = await db.query("SELECT IFNULL(field_builder_name_value,'') as name FROM field_data_field_builder_name WHERE entity_id=?", [b.builder]);
+      if(l.length>0) {
+         b.builder = {name: l[0].name };
+      }
+      l = await db.query("SELECT body_value FROM field_data_body WHERE entity_id=?", [b.entity_id]);
+      if(l.length>0) {
+         b.full_desc = l[0].body_value;
       }
       b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
       b.class = await getClass(db, b);
-      db.close();
-      if (b.uri) {
-         b.image = b.uri.replace('public:/', 'https://oga.org.uk/sites/default/files');
+      l = await db.query(`
+         SELECT 
+            REPLACE(uri, 'public:/', 'https://oga.org.uk/sites/default/files') as uri,
+            field_copyright_value as copyright
+            FROM field_data_field_boat_image i 
+            JOIN file_managed f ON i.field_boat_image_fid = f.fid 
+            JOIN field_data_field_copyright c ON c.entity_id = f.fid
+            WHERE i.entity_id=?`, [b.entity_id]);
+      if(l.length>0) {
+         b.images = l;
       }
+      db.close();
       return b;
    }
 }

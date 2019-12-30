@@ -14,6 +14,8 @@ type Mutation {
 
 type Boat {
    id:ID!
+   short_desc:String
+   full_desc:String
    sailarea:String
    draft:String
    depth:String
@@ -22,18 +24,17 @@ type Boat {
    length_on_waterline:String
    length_over_spars:String
    length_overall:String
-   propellor_type:String
    rig_type:String
    hull_type:String
    construction_material:String
+   engineStatus:EngineStatus
    engine_fuel:String
    engine_position:String
    engine_date:String
    engine_make:String
    engine_power:String
    hp:String
-   moving_keel_type:String
-   propellor_position:String
+   previous_engine:String
    spar_material:String
    home_country:String
    call_sign:String
@@ -41,9 +42,12 @@ type Boat {
    current_function:String
    fish_no:String
    for_sale:String
+   sale_text:String
+   price:String
    home_port:String
    location:String
    more_info:String
+   moving_keel_type:String
    moving_keel:String
    moving_keel_weight:Int
    nhsr_no:String
@@ -55,22 +59,19 @@ type Boat {
    place_built:String
    port_reg:String
    prev_name:String
-   previous_engine:String
-   price:String
+   propellor_type:String
+   propellor_position:String
    propellor_blades:Int
    reference:String
    sail_no:String
-   sale_text:String
-   short_desc:String
    special_tag:String
    ssr_no:String
    oga_no:Int
    name:String
-   image:String
+   images:[Image]
    year:Int
    previousNames:String
    class:ClassOfBoat
-   engineStatus:EngineStatus
    builder:Builder
    whereBuilt:String
    homePort:String
@@ -104,6 +105,11 @@ type BoatPages {
     # Information for paginating this connection
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
+}
+
+type Image {
+   uri:String
+   copyright:String
 }
 
 type OwnerShip {
