@@ -5,6 +5,9 @@ import { useQuery } from '@apollo/react-hooks';
 
 const query = (page, boatsPerPage) => gql`{
   boats(page:${page}, boatsPerPage:${boatsPerPage}) {
+    totalCount
+    hasNextPage
+    hasPreviousPage
     boats{
       id
       oga_num
@@ -32,7 +35,9 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error :(TBD)</p>;
 
-  if(onLoad) onLoad(data.totalCount);
+  if(onLoad) {
+    onLoad(data.boats.totalCount);
+  }
 
   return data.boats.boats.map((boat) => (
     <Card key={boat.id}>

@@ -123,9 +123,9 @@ const pagedBoats = async (_, { page, boatsPerPage }) => {
    if(page) {
       start = (page-1)*pageSize;
    }
-   console.log(start, pageSize);
    const l = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
    const boats = await processBoats(db, l);
+   db.close();
    const hasNextPage = start + pageSize < totalCount;
    const hasPreviousPage = page>1;
    const result = {
@@ -134,7 +134,6 @@ const pagedBoats = async (_, { page, boatsPerPage }) => {
       hasNextPage,
       hasPreviousPage
    };
-   console.log(result);
    return result;
 };
 

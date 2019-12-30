@@ -19,9 +19,12 @@ const client = new ApolloClient({
 const BrowseBoats = () => {
 
   const [activePage, setActivePage] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
+  const [boatsPerPage] = useState(8);
 
   const onLoad = (totalCount) => {
-    console.log('onLoad', totalCount)
+    console.log(totalCount);
+    setPageCount(Math.ceil(totalCount/boatsPerPage));
   }
 
   const onChange = (_, pageInfo) => {
@@ -41,7 +44,8 @@ const BrowseBoats = () => {
       <Pagination 
       activePage={activePage}
       onPageChange={onChange}
-      totalPages={10}
+      totalPages={pageCount}
+      ellipsisItem={null}
        />
     </Container>
   </ApolloProvider>
