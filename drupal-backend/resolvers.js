@@ -26,31 +26,12 @@ const options = {
 
 const getClass = async (db, boat) => {
    let name = `${boat.name} Class`;
-   let description = "";
    if (boat.design_class) {
-      const r = await db.query(`
-      SELECT name, description 
-      FROM taxonomy_term_data WHERE tid IN (?)
-      `,
-      [boat.design_class]
-      );
-      name = r[0].name;
-      description = r[0].description;
-   }
-   let rigType = '';
-   if (boat.rig_type) {
-      const r = await db.query(`
-      SELECT name, description 
-      FROM taxonomy_term_data WHERE tid IN (?)
-      `,
-      [boat.rig_type]
-      );
-      rigType = r[0].name;
+      name = boat.design_class
    }
    return {
       name: name,
-      rigType: rigType,
-      description: description,
+      rigType: boat.rig_type,
       designer: { name: boat.designer_name }
    };
 }
@@ -173,6 +154,7 @@ const Query = {
          b.images = l;
       }
       db.close();
+      console.log(b)
       return b;
    }
 }

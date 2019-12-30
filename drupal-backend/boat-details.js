@@ -47,8 +47,14 @@ const buildQuery = (id) => {
     let i = 0;
     Object.keys(allFields).forEach(key => {
         allFields[key].forEach(field => {
+            fields += sep;
             const asField = field.replace(/^boat_/, '');
-            fields += `${sep}t${i}.field_${field}_${key} as ${asField}`
+            if(key === 'tid') {
+                fields += `(SELECT name FROM taxonomy_term_data WHERE tid=t${i}.field_${field}_${key})`
+            } else {
+                fields += `t${i}.field_${field}_${key}`
+            }
+            fields += ` as ${asField}`;
             sep = ",\n";
             joins += `LEFT JOIN field_data_field_${field} AS t${i} ON t${i}.entity_id=node.nid\n`
             i++;

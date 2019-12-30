@@ -9,8 +9,8 @@
         IFNULL(x.field_builder_name_value,'') as builder_name,
         d.field_designer_target_id as designer,
         IFNULL(w.field_designer_name_value,'') as designer_name,
-        r.field_rig_type_tid as rig_type,
-        c.field_design_class_tid as design_class,
+        (SELECT name FROM taxonomy_term_data WHERE tid=r.field_rig_type_tid) as rig_type,
+        (SELECT name FROM taxonomy_term_data WHERE tid=c.field_design_class_tid) as design_class,
         f.uri
     FROM 
     field_data_field_boat_name n

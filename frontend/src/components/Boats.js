@@ -29,7 +29,13 @@ const query = (page, boatsPerPage) => gql`{
 }`;
 
 // use this for graphQL enums
-const capitalise = (s) => s.toLowerCase().replace(/^\w/, c => c.toUpperCase());
+const capitalise = (s) => {
+  if(s) {
+    console.log('rigType', s);
+    return s.toLowerCase().replace(/^\w/, c => c.toUpperCase());
+  }
+  return '';
+}
 
 const Boats = ({page, boatsPerPage, onLoad}) => {
 
