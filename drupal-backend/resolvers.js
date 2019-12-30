@@ -25,7 +25,6 @@ const options = {
 }
 
 const getClass = async (db, boat) => {
-   console.log(boat);
    let name = `${boat.name} Class`;
    let description = "";
    if (boat.class !== 0) {
@@ -39,12 +38,12 @@ const getClass = async (db, boat) => {
       description = r[0].description;
    }
    let rigType = '';
-   if (boat.rigType) {
+   if (boat.rig_type) {
       const r = await db.query(`
       SELECT name, description 
       FROM taxonomy_term_data WHERE tid IN (?)
       `,
-      [boat.rigType]
+      [boat.rig_type]
       );
       rigType = r[0].name;
    }

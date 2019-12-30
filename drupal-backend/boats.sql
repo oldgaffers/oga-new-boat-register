@@ -3,6 +3,8 @@
         n.field_boat_name_value as name,
         o.field_boat_oga_no_value as oga_num,
         y.field_year_built_value as year,
+        p.field_place_built_value as whereBuilt,
+        h.field_home_port_value as homePort,
         b.field_builder_target_id as builder,
         IFNULL(x.field_builder_name_value,'') as builder_name,
         d.field_designer_target_id as designer,
@@ -18,6 +20,8 @@
     LEFT JOIN field_data_field_boat_oga_no i ON i.entity_id = n.entity_id
     LEFT JOIN field_data_field_builder b ON b.entity_id = n.entity_id
     LEFT JOIN field_data_field_rig_type r ON r.entity_id = n.entity_id
+    LEFT JOIN field_data_field_home_port h ON h.entity_id = n.entity_id
+    LEFT JOIN field_data_field_place_built p ON p.entity_id = n.entity_id
     LEFT JOIN node ON node.nid = n.entity_id
     LEFT JOIN (
         SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand())

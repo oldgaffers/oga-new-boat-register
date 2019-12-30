@@ -21,6 +21,8 @@ type Boat {
    class:ClassOfBoat
    engineStatus:EngineStatus
    builder:Builder
+   whereBuilt:String
+   homePort:String
    currentOwnership:[OwnerShip]
 }
 

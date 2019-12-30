@@ -14,6 +14,8 @@ const query = (page, boatsPerPage) => gql`{
       name
       image
       year
+      homePort
+      whereBuilt
       builder{ name }
       class{
         name
@@ -51,19 +53,19 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
           </Segment.Group>
         </Card.Header>
         <Card.Meta>
-          <span className='rig_type'>Rig Type {capitalise(boat.class.rigType)}</span>
+          Rig Type<span className='rig_type'>{capitalise(boat.class.rigType)}</span>
         </Card.Meta>
         <Card.Meta>
-          <span className='place_built'>Built {boat.builder.location}</span>
+        Built <span className='place_built'>{boat.whereBuilt}</span>
         </Card.Meta>
         <Card.Meta>
-          <span className='place_built'>Home port or other location {boat.homePort}</span>
+        Home port <span className='home_port'>{boat.homePort}</span>
         </Card.Meta>
         <Card.Meta>
-          <span className='place_built'>Builder {boat.builder.name}</span>
+        Builder <span className='builder'>{boat.builder.name}</span>
         </Card.Meta>
         <Card.Meta>
-          <span className='place_built'>Designer {boat.class.designer.name}</span>
+          Designer <span className='designer'>{boat.class.designer.name}</span>
         </Card.Meta>
         <Card.Description>
           View all Details
