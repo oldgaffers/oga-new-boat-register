@@ -2,6 +2,7 @@ type Query {
    greeting:String
    classes:[ClassOfBoat]
    boat(id:Int):Boat
+   handicap(id:Int):HandicapDetails
    boats(page:Int, boatsPerPage:Int):BoatPages
    owners:[Owner]
    ownerships:[OwnerShip]
@@ -16,14 +17,14 @@ type Boat {
    id:ID!
    short_desc:String
    full_desc:String
-   sailarea:String
-   draft:String
-   depth:String
-   draft_keel_down:String
-   draft_keel_up:String
-   length_on_waterline:String
-   length_over_spars:String
-   length_overall:String
+   draft:Float
+   depth:Float
+   draft_keel_down:Float
+   draft_keel_up:Float
+   length_on_waterline:Float
+   length_over_spars:Float
+   length_overall:Float
+   beam:Float
    rig_type:String
    hull_type:String
    construction_material:String
@@ -32,8 +33,8 @@ type Boat {
    engine_position:String
    engine_date:String
    engine_make:String
-   engine_power:String
-   hp:String
+   engine_power:Float
+   hp:Float
    previous_engine:String
    spar_material:String
    home_country:String
@@ -78,6 +79,36 @@ type Boat {
    currentOwnership:[OwnerShip]
 }
 
+type SailDimensions {
+   foot:Float
+   leach:Float
+   luff:Float
+   head:Float
+}
+
+type TopSailDimensions {
+   luff:Float
+   perpendicular:Float
+}
+
+type HandicapDetails {
+   oga_no:Int
+   calculated_thcf:Float
+   no_head_sails:Boolean 
+   sailarea:Float 
+   down_wind_sail:SailDimensions
+   jib:SailDimensions
+   staysail:SailDimensions
+   fore_triangle_base:Float 
+   fore_triangle_height:Float 
+   foremast:SailDimensions
+   topsail:TopSailDimensions
+   mizzen_topsail:TopSailDimensions
+   foretopsail:TopSailDimensions
+   main:SailDimensions
+   mizzen:SailDimensions
+}
+
 type BoatSummary {
    id:ID!
    oga_no:Int
@@ -96,6 +127,8 @@ type ClassOfBoat {
    rigType:RigType
    mainsailType:SailType
    designer:Designer
+   hullType:String
+   genericType:String
 }
 
 type BoatPages {
@@ -141,8 +174,9 @@ enum RigTypeOld {
 }
 
 scalar RigType
+scalar SailType
 
-enum SailType {
+enum SailTypeOld {
    BERMUDAN,
    GAFF,
    GUNTER,

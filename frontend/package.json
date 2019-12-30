@@ -17,6 +17,7 @@
     "frontier-forms": "^0.1.2",
     "graphql": "^14.5.8",
     "hookrouter": "^1.2.3",
+    "pure-react-carousel": "^1.24.1",
     "react": "^16.12.0",
     "react-apollo-form": "^0.1.8",
     "react-dom": "^16.12.0",

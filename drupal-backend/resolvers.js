@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const util = require('util');
 const fs = require('fs');
-const { buildQuery } = require('./boat-details');
+const { buildBoatQuery, buildHandicapQuery } = require('./boat-details');
 const boatQuery = fs.readFileSync('./boats.sql', 'utf8')
 
 function makeDb(config) {
@@ -28,12 +28,26 @@ const getClass = async (db, boat) => {
    let name = `${boat.name} Class`;
    if (boat.design_class) {
       name = boat.design_class
+      delete boat.design_class
    }
-   return {
+   const c =  {
       name: name,
       rigType: boat.rig_type,
       designer: { name: boat.designer_name }
    };
+   if (boat.hull_type) {
+      c.hullType = boat.hull_type
+      delete boat.hull_type;
+   }
+   if (boat.generic_type) {
+      c.genericType = boat.generic_type
+      delete boat.generic_type;
+   }
+   if (boat.mainsail_type) {
+      c.mainsailType = boat.mainsail_type
+      delete boat.mainsail_type;
+   }
+   return c;
 }
 
 const ownershipsByBoat = async (db, id) => {
@@ -122,7 +136,7 @@ const Query = {
    boats: pagedBoats,
    boat: async (_, {id}) => {
       const db = makeDb(options);
-      let l = await db.query(buildQuery(id));
+      let l = await db.query(buildBoatQuery(id));
       // only take the non-null keys from the database
       const b = {};
       Object.keys(l[0]).forEach(key => {
@@ -154,8 +168,50 @@ const Query = {
          b.images = l;
       }
       db.close();
-      console.log(b)
       return b;
+   },
+   handicap: async (_, {id}) => {
+      const db = makeDb(options);
+      let l = await db.query(buildHandicapQuery(id));
+      db.close();
+      h = { 
+         oga_no: l[0].oga_no, no_head_sails: l[0].no_head_sails,
+         fore_triangle_height: l[0].fore_triangle_height,
+         fore_triangle_base: l[0].fore_triangle_base,
+         calculated_thcf: l[0].calculated_thcf,
+         sailarea: l[0].sailarea
+       };
+      h.main = {
+         foot: l[0].main_sail_foot,
+         head: l[0].mainsail_head,
+         luff: l[0].mainsail_luff
+      };
+      if(l[0].mizzen_luff) {
+         h.mizzen = {
+            foot: l[0].mizzen_foot,
+            head: l[0].mizzen_head,
+            luff: l[0].mizzen_luff
+         };   
+      }
+      if(l[0].topsail_luff) {
+         h.topsail = {
+            perpendicular: l[0].topsail_perpendicular,
+            luff: l[0].topsail_luff
+         };   
+      }
+      if(l[0].foretopsail_luff) {
+         h.foretopsail = {
+            perpendicular: l[0].foretopsail_perpendicular,
+            luff: l[0].foretopsail_luff
+         };   
+      }
+      if(l[0].mizzen_topsail_luff) {
+         h.mizzen_topsail = {
+            perpendicular: l[0].mizzen_topsail_perpendicul,
+            luff: l[0].mizzen_topsail_luff
+         };   
+      }
+      return h;
    }
 }
 

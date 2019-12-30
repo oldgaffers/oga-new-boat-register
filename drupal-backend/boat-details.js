@@ -1,28 +1,32 @@
 
-const handicapFields = [
-    'biggest_down_wind_sail_foo', 'biggest_down_wind_sail_lea', 
+const handicapFields = {
+    dec_sq_feet: [ 'sailarea' ],
+    dec_feet: ['biggest_down_wind_sail_foo', 'biggest_down_wind_sail_lea', 
     'biggest_down_wind_sail_luf', 'biggest_jib_foot', 
     'biggest_jib_leach', 'biggest_jib_luff', 'biggest_staysail_foot',
     'biggest_staysail_leach', 'biggest_staysail_luff',
     'fore_triangle_base', 'fore_triangle_height', 'foremast_foot', 'foremast_head',
     'foremast_luff', 'foretopsail_luff', 'foretopsail_perpendicular', 
-    'main_sail_foot', 'mainsail_head', 'mainsail_luff', 'mainsail_type',
+    'main_sail_foot', 'mainsail_head', 'mainsail_luff', 
     'mizzen_foot', 'mizzen_head', 'mizzen_luff',
     'mizzen_topsail_luff', 'mizzen_topsail_perpendicul', 
-    'no_head_sails', 'sailarea', 'topsail_luff', 'topsail_perpendicular'
-    ];
+     'topsail_luff', 'topsail_perpendicular'
+    ],
+    value: ['calculated_thcf', 'no_head_sails', 'boat_oga_no'] // boat_oga_no needed as primary key
+};
 
-const allFields = { 
+const boatFields = { 
     target_id: [ 'builder', 'designer'],
     dec_sq_feet: [ 'sailarea' ],
     dec_feet: [
-        'draft', 'depth', 'draft_keel_down', 'draft_keel_up',
+        'draft', 'depth', 'draft_keel_down', 'draft_keel_up', 'beam',
         'length_on_waterline', 'length_over_spars', 'length_overall',
     ],
     tid: [
         'propellor_type', 'rig_type', 'hull_type','construction_material',
         'design_class', 'generic_type', 'engine_fuel', 'engine_position', 
-        'moving_keel_type', 'propellor_position', 'spar_material', 'home_country'
+        'moving_keel_type', 'propellor_position', 'spar_material', 'home_country',
+        'mainsail_type',
     ],
     value: [
     'approximate_year_of_build_',
@@ -40,13 +44,13 @@ const allFields = {
 'short_desc', 'special_tag', 'ssr_no'
 ]};
 
-const buildQuery = (id) => {
+const buildQuery = (id, fieldMap) => {
     let fields = "";
     let joins = "";
     let sep = "\n";
     let i = 0;
-    Object.keys(allFields).forEach(key => {
-        allFields[key].forEach(field => {
+    Object.keys(fieldMap).forEach(key => {
+        fieldMap[key].forEach(field => {
             fields += sep;
             const asField = field.replace(/^boat_/, '');
             if(key === 'tid') {
@@ -65,4 +69,12 @@ const buildQuery = (id) => {
     return query;
 }
 
-module.exports = { buildQuery }
+const buildBoatQuery = (id) => {
+    return buildQuery(id, boatFields);
+}
+
+const buildHandicapQuery = (id) => {
+    return buildQuery(id, handicapFields);
+}
+
+module.exports = { buildBoatQuery, buildHandicapQuery }
