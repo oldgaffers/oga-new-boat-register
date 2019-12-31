@@ -20,10 +20,8 @@ const TopMenu = ({fixed}) => {
             >
             <Image src='https://www.oga.org.uk/sites/all/themes/boat_register/logo.png' />
             <Container>
-                <Menu.Item active>
-                    <A href="/">Home</A>
-                </Menu.Item>
-                <Menu.Item as='a'>Search</Menu.Item>
+                <Menu.Item><A href="/">Home</A></Menu.Item>
+                <Menu.Item><A href="/browse">Search</A></Menu.Item>
                 <Menu.Item as='a'>For Sale</Menu.Item>
                 <Menu.Item as='a'>Join In</Menu.Item>
                 <Menu.Item position='right'>
