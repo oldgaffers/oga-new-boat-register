@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import Boats from './Boats.js';
 import { CardGroup, Container, Divider, Header, Pagination } from 'semantic-ui-react';
 import TopMenu from './TopMenu.js';
+import SearchAndFilterBoats from './SearchAndFilterBoats.js';
 
-const BrowseBoats = ({client}) => {
+const BrowseBoats = () => {
 
   const [activePage, setActivePage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
@@ -23,6 +24,16 @@ const BrowseBoats = ({client}) => {
     <Container>
     <TopMenu/>
     <Header as="h1">Browse Boats</Header>
+    <Container>
+      <SearchAndFilterBoats/>
+      <Pagination 
+      activePage={activePage}
+      onPageChange={onChange}
+      totalPages={pageCount}
+      ellipsisItem={null}
+       />
+    </Container>
+    <Divider />
     <CardGroup>
       <Boats page={activePage} boatsPerPage={8} onLoad={onLoad} />
     </CardGroup>
