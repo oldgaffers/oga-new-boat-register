@@ -28,7 +28,6 @@ const options = {
 }
 
 const getClass = async (db, boat) => {
-   console.log(boat);
    let name = `${boat.name} Class`;
    if (boat.design_class) {
       name = boat.design_class
@@ -57,7 +56,6 @@ const getClass = async (db, boat) => {
       c.mainsailType = boat.mainsail_type
       delete boat.mainsail_type;
    }
-   console.log('class', c);
    return c;
 }
 
