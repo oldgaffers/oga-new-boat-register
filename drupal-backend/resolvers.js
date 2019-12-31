@@ -1,8 +1,11 @@
 const mysql = require('mysql');
 const util = require('util');
 const fs = require('fs');
-const { buildBoatQuery, buildHandicapQuery } = require('./boat-details');
-const boatQuery = fs.readFileSync('./boats.sql', 'utf8')
+const {
+   ownershipsByBoat, getTargetField, numPublishedBoats,
+   buildSummaryQuery, buildBoatQuery, buildHandicapQuery,
+   getImages, getFullDescription
+} = require('./queries');
 
 function makeDb(config) {
    const connection = mysql.createConnection(config);
@@ -25,6 +28,7 @@ const options = {
 }
 
 const getClass = async (db, boat) => {
+   console.log(boat);
    let name = `${boat.name} Class`;
    if (boat.design_class) {
       name = boat.design_class
@@ -33,11 +37,17 @@ const getClass = async (db, boat) => {
    const c =  {
       name: name,
       rigType: boat.rig_type,
-      designer: { name: boat.designer_name }
    };
    if (boat.hull_type) {
       c.hullType = boat.hull_type
       delete boat.hull_type;
+   }
+   if (boat.designer) {
+      const designer = await getTargetField(db, "designer_name", boat.designer);
+      if(designer) {
+         c.designer = {name: designer };
+      }
+      delete boat.designer;
    }
    if (boat.generic_type) {
       c.genericType = boat.generic_type
@@ -47,31 +57,8 @@ const getClass = async (db, boat) => {
       c.mainsailType = boat.mainsail_type
       delete boat.mainsail_type;
    }
+   console.log('class', c);
    return c;
-}
-
-const ownershipsByBoat = async (db, id) => {
-   const l = await db.query(`
-   SELECT
-   n.field_owner_name_value as name,
-   p.field_parts_owned_value as parts_owned,
-   s.field_start_year_value as start,
-   e.field_end_year_value as end
-   FROM field_data_field_owners b
-   LEFT JOIN field_data_field_owner_name n ON b.field_owners_target_id=n.entity_id
-   LEFT JOIN field_data_field_parts_owned p ON b.field_owners_target_id=p.entity_id
-   LEFT JOIN field_data_field_start_year s ON b.field_owners_target_id=s.entity_id
-   LEFT JOIN field_data_field_end_year e ON b.field_owners_target_id=e.entity_id
-   WHERE b.entity_id = ? AND (field_end_year_value=0 OR field_end_year_value is null)
-   `, [id]);
-   const r = [];
-   l.forEach(i => {
-      r.push({
-         owner: { name: i.name },
-         sixtyFourths: i.parts_owned
-      });
-   });
-   return r;
 }
 
 const processBoatSummaries = async (db, l) => {
@@ -80,34 +67,23 @@ const processBoatSummaries = async (db, l) => {
       const b = l[i];
       if (b.uri) {
          b.image = b.uri.replace('public:/', 'https://oga.org.uk/sites/default/files');
+         delete b.uri
+      }
+      const builder = await getTargetField(db, "builder_name", b.builder);
+      if(builder) {
+         b.builder = {name: builder };
       }
       boats.push({
          ...b,
          id: b.oga_no,
-         currentOwnership: await ownershipsByBoat(db, b.entity_id),
          class: await getClass(db, b),
-         builder: { name: b.builder_name }
       });
    }
    return boats;
 }
 
-const numBoats = async (db) => {
-   const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat'");
-   return c[0].num;
-}
-
-const numPublishedBoats = async (db) => {
-   const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=1");
-   return c[0].num;
-}
-
-const numUnpublishedBoats = async (db) => {
-   const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=0");
-   return c[0].num;
-}
-
 const pagedBoats = async (_, { page, boatsPerPage }) => {
+   const boatQuery = buildSummaryQuery();
    const db = makeDb(options);
    const totalCount = await numPublishedBoats(db);
    let start = 0;
@@ -146,26 +122,19 @@ const Query = {
          }
       });
       b.id = b.oga_no;
-      l = await db.query("SELECT IFNULL(field_builder_name_value,'') as name FROM field_data_field_builder_name WHERE entity_id=?", [b.builder]);
-      if(l.length>0) {
-         b.builder = {name: l[0].name };
+      const builder = await getTargetField(db, "builder_name", b.builder);
+      if(builder) {
+         b.builder = {name: builder };
       }
-      l = await db.query("SELECT body_value FROM field_data_body WHERE entity_id=?", [b.entity_id]);
-      if(l.length>0) {
-         b.full_desc = l[0].body_value;
+      const fd = getFullDescription(db, b.entity_id);
+      if(fd) {
+         b.full_desc = fd;
       }
       b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
       b.class = await getClass(db, b);
-      l = await db.query(`
-         SELECT 
-            REPLACE(uri, 'public:/', 'https://oga.org.uk/sites/default/files') as uri,
-            field_copyright_value as copyright
-            FROM field_data_field_boat_image i 
-            JOIN file_managed f ON i.field_boat_image_fid = f.fid 
-            JOIN field_data_field_copyright c ON c.entity_id = f.fid
-            WHERE i.entity_id=?`, [b.entity_id]);
-      if(l.length>0) {
-         b.images = l;
+      const images = getImages(db, b.entity_id);
+      if(images) {
+         b.images = images;
       }
       db.close();
       return b;

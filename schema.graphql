@@ -114,11 +114,11 @@ type BoatSummary {
    oga_no:Int
    name:String
    image:String
-   year:Int
+   year_built:Int
    class:ClassOfBoat
    builder:Builder
-   whereBuilt:String
-   homePort:String
+   place_built:String
+   home_port:String
 }
 
 type ClassOfBoat {
