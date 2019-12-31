@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Tab, Container } from 'semantic-ui-react';
+import { List, Tab } from 'semantic-ui-react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
@@ -17,24 +17,25 @@ const handicapQuery = (id) => gql`{
     }
 }`;
 
+const format = {
+    sailarea: {header:'Sail area:', unit: 'sq ft'},
+    fore_triangle_height: {header:'Fore triangle height (I):', unit: ' ft'},
+    fore_triangle_base: {header:'Fore triangle base (J):', unit: 'ft'},
+    calculated_thcf: { header:'Calculated T(H)CF:', unit: ''},
+    main_head: {header:'Mainsail head (G):', unit: 'ft'},
+    main_luff: {header:'Mainsail luff (H):', unit: 'ft'},
+    main_foot: {header:'Mainsail foot (F):', unit: 'ft'},
+    mizzen_luff: {header:'Mizzen luff (H)', unit: 'ft'},
+    mizzen_foot: {header:'Mizzen foot (B)', unit: 'ft'},
+    topsail_perpendicular: {header:'Topsail perpendicular (TI):', unit: 'ft'},
+    topsail_luff: {header:'Topsail luff (TH):', unit: 'ft'}
+}
+
 const RigAndSails = ({id}) => {
     const { loading, error, data } = useQuery(handicapQuery(id));
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error :(TBD)</p>;
     const handicap = data.handicap
-    const format = {
-        sailarea: {header:'Sail area:', unit: 'sq ft'},
-        fore_triangle_height: {header:'Fore triangle height (I):', unit: ' ft'},
-        fore_triangle_base: {header:'Fore triangle base (J):', unit: 'ft'},
-        calculated_thcf: { header:'Calculated T(H)CF:', unit: ''},
-        main_head: {header:'Mainsail head (G):', unit: 'ft'},
-        main_luff: {header:'Mainsail luff (H):', unit: 'ft'},
-        main_foot: {header:'Mainsail foot (F):', unit: 'ft'},
-        mizzen_luff: {header:'Mizzen luff (H)', unit: 'ft'},
-        mizzen_foot: {header:'Mizzen foot (B)', unit: 'ft'},
-        topsail_perpendicular: {header:'Topsail perpendicular (TI):', unit: 'ft'},
-        topsail_luff: {header:'Topsail luff (TH):', unit: 'ft'}
-    }
     const items = [];
     if(handicap.sailarea) items.push({ ...format.sailarea, value: handicap.sailarea });
     if(handicap.fore_triangle_height) items.push({ ...format.fore_triangle_height, value: handicap.fore_triangle_height });
