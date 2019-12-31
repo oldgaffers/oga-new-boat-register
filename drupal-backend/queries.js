@@ -1,8 +1,11 @@
  
  const summaryFields = {
     target_id: [ 'builder', 'designer'],
-    value: ["boat_oga_no", "boat_name", "year_built", "place_built", "home_port"],
-    tid: [ "rig_type", "design_class"]
+    value: [
+    "boat_oga_no", "boat_name", "prev_name",
+    "year_built", "place_built", "home_port"
+    ],
+    tid: [ "rig_type", "design_class", "construction_material"]
  }
 
 const handicapFields = {
@@ -177,6 +180,15 @@ const numBoats = async (db) => {
      }
  }
 
+ const getTargetIdsForType = async (db, type) => {
+     return await db.query('SELECT title as name, nid as id FROM node WHERE type=?', [type]);
+ }
+
+ const getTaxonomy = async (db, type) => {
+    return (await db.query('SELECT d.name FROM taxonomy_vocabulary v JOIN taxonomy_term_data d on d.vid = v.vid where v.machine_name=?', [type])
+    ).map(({name}) => name);
+}
+
 module.exports = { 
     ownershipsByBoat,
     getTargetField,
@@ -187,5 +199,7 @@ module.exports = {
     numPublishedBoats,
     numBoats,
     getImages,
-    getFullDescription
+    getFullDescription,
+    getTargetIdsForType,
+    getTaxonomy
 }

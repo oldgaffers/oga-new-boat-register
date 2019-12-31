@@ -17,11 +17,14 @@ const query = (page, boatsPerPage) => gql`{
       year_built
       home_port
       place_built
+      construction_material
+      prev_name
       builder{ name }
       class{
         name
         rigType
         mainsailType
+        genericType
         designer{ name }
       }
     }
@@ -31,7 +34,6 @@ const query = (page, boatsPerPage) => gql`{
 // use this for graphQL enums
 const capitalise = (s) => {
   if(s) {
-    console.log('rigType', s);
     return s.toLowerCase().replace(/^\w/, c => c.toUpperCase());
   }
   return '';
@@ -47,7 +49,7 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
   if(onLoad) {
     onLoad(data.boats.totalCount);
   }
-
+  
   return data.boats.boats.map((boat) => (
     <Card key={boat.id}>
       <Image src={boat.image} wrapped ui={false} />

@@ -4,7 +4,7 @@ const fs = require('fs');
 const {
    ownershipsByBoat, getTargetField, numPublishedBoats,
    buildSummaryQuery, buildBoatQuery, buildHandicapQuery,
-   getImages, getFullDescription
+   getImages, getFullDescription, getTargetIdsForType, getTaxonomy
 } = require('./queries');
 
 function makeDb(config) {
@@ -106,80 +106,154 @@ const pagedBoats = async (_, { page, boatsPerPage }) => {
    return result;
 };
 
+const boat = async (_, {id}) => {
+   const db = makeDb(options);
+   let l = await db.query(buildBoatQuery(id));
+   // only take the non-null keys from the database
+   const b = {};
+   Object.keys(l[0]).forEach(key => {
+      const val = l[0][key];
+      if(val) {
+         b[key] = val;
+      }
+   });
+   b.id = b.oga_no;
+   const builder = await getTargetField(db, "builder_name", b.builder);
+   if(builder) {
+      b.builder = {name: builder };
+   }
+   const fd = getFullDescription(db, b.entity_id);
+   if(fd) {
+      b.full_desc = fd;
+   }
+   b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
+   b.class = await getClass(db, b);
+   const images = getImages(db, b.entity_id);
+   if(images) {
+      b.images = images;
+   }
+   db.close();
+   return b;
+}
+
+const handicap = async (_, {id}) => {
+   const db = makeDb(options);
+   let l = await db.query(buildHandicapQuery(id));
+   db.close();
+   h = { 
+      oga_no: l[0].oga_no, no_head_sails: l[0].no_head_sails,
+      fore_triangle_height: l[0].fore_triangle_height,
+      fore_triangle_base: l[0].fore_triangle_base,
+      calculated_thcf: l[0].calculated_thcf,
+      sailarea: l[0].sailarea
+    };
+   h.main = {
+      foot: l[0].main_sail_foot,
+      head: l[0].mainsail_head,
+      luff: l[0].mainsail_luff
+   };
+   if(l[0].mizzen_luff) {
+      h.mizzen = {
+         foot: l[0].mizzen_foot,
+         head: l[0].mizzen_head,
+         luff: l[0].mizzen_luff
+      };   
+   }
+   if(l[0].topsail_luff) {
+      h.topsail = {
+         perpendicular: l[0].topsail_perpendicular,
+         luff: l[0].topsail_luff
+      };   
+   }
+   if(l[0].foretopsail_luff) {
+      h.foretopsail = {
+         perpendicular: l[0].foretopsail_perpendicular,
+         luff: l[0].foretopsail_luff
+      };   
+   }
+   if(l[0].mizzen_topsail_luff) {
+      h.mizzen_topsail = {
+         perpendicular: l[0].mizzen_topsail_perpendicul,
+         luff: l[0].mizzen_topsail_luff
+      };   
+   }
+   return h;
+}
+
+const designers = async (_, {}) => {
+   const db = makeDb(options);
+   const designers = await getTargetIdsForType(db, 'designers');
+   db.close();
+   return designers;
+}
+
+const builders = async (_, {}) => {
+   const db = makeDb(options);
+   const builders = await getTargetIdsForType(db, 'builders');
+   db.close();
+   return builders;
+}
+
+const rigTypes = async (_, {}) => {
+   const db = makeDb(options);
+   const r = await getTaxonomy(db, 'rig_type');
+   db.close();
+   return r;
+}
+
+const sailTypes = async (_, {}) => {
+   const db = makeDb(options);
+   const r = await getTaxonomy(db, 'main_sail_type');
+   db.close();
+   return r;
+}
+
+const classesOfBoat = async (_, {}) => {
+   const db = makeDb(options);
+   const r = await getTaxonomy(db, 'design_class');
+   db.close();
+   return r;
+}
+
+const genericTypes = async (_, {}) => {
+   const db = makeDb(options);
+   const r = await getTaxonomy(db, 'generic_type');
+   db.close();
+   return r;
+}
+
+const constructionMaterials = async (_, {}) => {
+   const db = makeDb(options);
+   const r = await getTaxonomy(db, 'construction_material');
+   db.close();
+   return r;
+}
+
+const piclists = async () => {
+   const db = makeDb(options);
+   const r = {
+      rigTypes: await getTaxonomy(db, 'rig_type'),
+      sailTypes:await getTaxonomy(db, 'main_sail_type'),
+      classNames:await getTaxonomy(db, 'design_class'),
+      genericTypes:await getTaxonomy(db, 'generic_type'),
+      constructionMaterials:await getTaxonomy(db, 'construction_material')
+   };
+   db.close();
+   return r;
+}
+
 const Query = {
    boats: pagedBoats,
-   boat: async (_, {id}) => {
-      const db = makeDb(options);
-      let l = await db.query(buildBoatQuery(id));
-      // only take the non-null keys from the database
-      const b = {};
-      Object.keys(l[0]).forEach(key => {
-         const val = l[0][key];
-         if(val) {
-            b[key] = val;
-         }
-      });
-      b.id = b.oga_no;
-      const builder = await getTargetField(db, "builder_name", b.builder);
-      if(builder) {
-         b.builder = {name: builder };
-      }
-      const fd = getFullDescription(db, b.entity_id);
-      if(fd) {
-         b.full_desc = fd;
-      }
-      b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
-      b.class = await getClass(db, b);
-      const images = getImages(db, b.entity_id);
-      if(images) {
-         b.images = images;
-      }
-      db.close();
-      return b;
-   },
-   handicap: async (_, {id}) => {
-      const db = makeDb(options);
-      let l = await db.query(buildHandicapQuery(id));
-      db.close();
-      h = { 
-         oga_no: l[0].oga_no, no_head_sails: l[0].no_head_sails,
-         fore_triangle_height: l[0].fore_triangle_height,
-         fore_triangle_base: l[0].fore_triangle_base,
-         calculated_thcf: l[0].calculated_thcf,
-         sailarea: l[0].sailarea
-       };
-      h.main = {
-         foot: l[0].main_sail_foot,
-         head: l[0].mainsail_head,
-         luff: l[0].mainsail_luff
-      };
-      if(l[0].mizzen_luff) {
-         h.mizzen = {
-            foot: l[0].mizzen_foot,
-            head: l[0].mizzen_head,
-            luff: l[0].mizzen_luff
-         };   
-      }
-      if(l[0].topsail_luff) {
-         h.topsail = {
-            perpendicular: l[0].topsail_perpendicular,
-            luff: l[0].topsail_luff
-         };   
-      }
-      if(l[0].foretopsail_luff) {
-         h.foretopsail = {
-            perpendicular: l[0].foretopsail_perpendicular,
-            luff: l[0].foretopsail_luff
-         };   
-      }
-      if(l[0].mizzen_topsail_luff) {
-         h.mizzen_topsail = {
-            perpendicular: l[0].mizzen_topsail_perpendicul,
-            luff: l[0].mizzen_topsail_luff
-         };   
-      }
-      return h;
-   }
+   boat: boat,
+   handicap: handicap,
+   designers: designers,
+   builders: builders,
+   rigTypes:rigTypes,
+   sailTypes:sailTypes,
+   classNames:classesOfBoat,
+   genericTypes:genericTypes,
+   constructionMaterials:constructionMaterials,
+   picLists: piclists
 }
 
 const Mutation = {

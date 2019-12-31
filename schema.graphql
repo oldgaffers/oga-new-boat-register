@@ -1,16 +1,30 @@
 type Query {
-   greeting:String
-   classes:[ClassOfBoat]
    boat(id:Int):Boat
    handicap(id:Int):HandicapDetails
    boats(page:Int, boatsPerPage:Int):BoatPages
+   designers:[Designer]
+   builders:[Builder]
    owners:[Owner]
    ownerships:[OwnerShip]
    ownershipsByBoat(id: ID!):[OwnerShip]
+   rigTypes:[RigType]
+   sailTypes:[SailType]
+   classNames:[String]
+   genericTypes:[GenericType]
+   constructionMaterials:[ConstructionMaterial]
+   picLists:PicLists
 }
 
 type Mutation {
    addBoat(name:String, class:String): Boat
+}
+
+type PicLists {
+   rigTypes:[RigType]
+   sailTypes:[SailType]
+   classNames:[String]
+   genericTypes:[GenericType]
+   constructionMaterials:[ConstructionMaterial]
 }
 
 type Boat {
@@ -74,8 +88,6 @@ type Boat {
    previousNames:String
    class:ClassOfBoat
    builder:Builder
-   whereBuilt:String
-   homePort:String
    currentOwnership:[OwnerShip]
 }
 
@@ -119,6 +131,8 @@ type BoatSummary {
    builder:Builder
    place_built:String
    home_port:String
+   prev_name:String
+   construction_material:String
 }
 
 type ClassOfBoat {
@@ -128,7 +142,7 @@ type ClassOfBoat {
    mainsailType:SailType
    designer:Designer
    hullType:String
-   genericType:String
+   genericType:GenericType
 }
 
 type BoatPages {
@@ -165,26 +179,9 @@ type Designer {
    name:String
 }
 
-enum RigTypeOld {
-   SLOOP,
-   CUTTER,
-   KETCH,
-   YAWL
-   SCHOONER
-}
-
 scalar RigType
 scalar SailType
-
-enum SailTypeOld {
-   BERMUDAN,
-   GAFF,
-   GUNTER,
-   JUNK,
-   LUG,
-   LATEEN,
-   SPRIT,
-   SQUARE
-}
+scalar GenericType
+scalar ConstructionMaterial
 
 enum EngineStatus { INBOARD, OUTBOARD, NONE }

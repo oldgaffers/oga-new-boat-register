@@ -1,17 +1,13 @@
 import React from 'react';
-import { Button, Dropdown, Form, Radio, Search } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Search } from 'semantic-ui-react';
+import gql from 'graphql-tag';
+import { useQuery } from '@apollo/react-hooks';
+import _ from 'lodash'
 
-const rigTypeOptions = [
-    {key:'', text:'- Any -', value: '- Any -'},
-    {key:'Cutter', text:'Cutter', value:'Cutter'},
-    {key:'Ketch', text:'Ketch', value:'Ketch'},
-    {key:'Sloop', text:'Sloop', value:'Sloop'},
-    {key:'Yawl', text:'Yawl', value:'Yawl'}
-];
-const mainSailOptions = [
-    {key:'', text:'- Any -', value: '- Any -'},
-    {key:'Gaff', text:'Gaff', value:'Gaff'},
-];
+const rigTypeOptions = [{key:'', text:'- Any -', value: '- Any -'}];
+
+const mainSailOptions = [{key:'', text:'- Any -', value: '- Any -'}];
+
 const genericTypeOptions = [
     {key:'', text:'- Any -', value: '- Any -'},
     {key:'Yacht', text:'Yacht', value:'Yacht'},
@@ -33,15 +29,50 @@ const sortOptions = [
 const pageOptions = [];
 
 const SearchAndFilterBoats = () => {
-    for(let i=6; i<=48; i+=6) {
-        pageOptions.push({key:i, text:`${i}`, value:i});
+
+    if(pageOptions.length===0) {
+        for(let i=6; i<=48; i+=6) {
+            pageOptions.push({key: i, text:`${i}`, value:i});
+        };
     }
+
+    /*
+    const { loading, error, data } = useQuery(gql(`{picLists{
+        rigTypes
+        sailTypes
+        classNames
+        genericTypes
+        constructionMaterials        
+    }}`));
+    if (loading) return <p>Loading...</p>
+    if (error) return <p>Error :(TBD)</p>;
+    if(rigTypeOptions.length===1) {
+        data.picLists.rigTypes.forEach(v => rigTypeOptions.push({key:v, text:v, value:v}));
+        data.picLists.sailTypes.forEach(v => mainSailOptions.push({key:v, text:v, value:v}));
+        data.picLists.classNames.forEach(v => designClassOptions.push({key:v, text:v, value:v}));
+        data.picLists.genericTypes.forEach(v => genericTypeOptions.push({key:v, text:v, value:v}));
+        data.picLists.constructionMaterials.forEach(v => materialOptions.push({key:v, text:v, value:v}));
+    }
+    */
+    const handleResultSelect = (e, { result }) => {
+        console.log('handleResultSelect',result);
+    };
+
+    const handleSearchChange = (e, { value }) => {
+        console.log('handleSearchChange', value);
+    };
+  
     return (
 <Form>
     <Form.Group inline>
         <Form.Field>
             <label>Boat Name</label>
-            <Search/>
+            <Search
+            onResultSelect={handleResultSelect}
+            onSearchChange={_.debounce(handleSearchChange, 500, {
+              leading: true,
+            })}
+            />
         </Form.Field>
         <Form.Input size='mini' label='OGA Boat No.' type='text' />
         <Form.Field>
@@ -60,7 +91,7 @@ const SearchAndFilterBoats = () => {
     </Form.Group>
     <Form.Group inline>
         <Form.Field><label>Previous name/s</label><Search/></Form.Field>
-        <Form.Field><label>Designer name</label><Search/></Form.Field>
+        <SearchAndFilterBoats/>
         <Form.Field><label>Builder name</label><Search/></Form.Field>
         <Form.Field>
             <label>Design Class</label>

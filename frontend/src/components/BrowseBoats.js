@@ -11,7 +11,6 @@ const BrowseBoats = () => {
   const [boatsPerPage] = useState(8);
 
   const onLoad = (totalCount) => {
-    console.log(totalCount);
     setPageCount(Math.ceil(totalCount/boatsPerPage));
   }
 
@@ -27,10 +26,11 @@ const BrowseBoats = () => {
     <Container>
       <SearchAndFilterBoats/>
       <Pagination 
+      boundaryRange=''
       activePage={activePage}
       onPageChange={onChange}
       totalPages={pageCount}
-      ellipsisItem={null}
+      ellipsisItem='...'
        />
     </Container>
     <Divider />
