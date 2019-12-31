@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Tab } from 'semantic-ui-react';
+import { List, Tab, Container } from 'semantic-ui-react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
@@ -22,22 +22,41 @@ const RigAndSails = ({id}) => {
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error :(TBD)</p>;
     const handicap = data.handicap
+    const format = {
+        sailarea: {header:'Sail area:', unit: 'sq ft'},
+        fore_triangle_height: {header:'Fore triangle height (I):', unit: ' ft'},
+        fore_triangle_base: {header:'Fore triangle base (J):', unit: 'ft'},
+        calculated_thcf: { header:'Calculated T(H)CF:', unit: ''},
+        main_head: {header:'Mainsail head (G):', unit: 'ft'},
+        main_luff: {header:'Mainsail luff (H):', unit: 'ft'},
+        main_foot: {header:'Mainsail foot (F):', unit: 'ft'},
+        mizzen_luff: {header:'Mizzen luff (H)', unit: 'ft'},
+        mizzen_foot: {header:'Mizzen foot (B)', unit: 'ft'},
+        topsail_perpendicular: {header:'Topsail perpendicular (TI):', unit: 'ft'},
+        topsail_luff: {header:'Topsail luff (TH):', unit: 'ft'}
+    }
+    const items = [];
+    if(handicap.sailarea) items.push({ ...format.sailarea, value: handicap.sailarea });
+    if(handicap.fore_triangle_height) items.push({ ...format.fore_triangle_height, value: handicap.fore_triangle_height });
+    if(handicap.fore_triangle_base) items.push({ ...format.fore_triangle_base, value: handicap.fore_triangle_base });
+    if(handicap.main) {
+        if(handicap.main.head) items.push({ ...format.main_head, value: handicap.main.head });
+        if(handicap.main.luff) items.push({ ...format.main_luff, value: handicap.main.luff });
+        if(handicap.main.foor) items.push({ ...format.main_foot, value: handicap.main.foot });
+    }
+    if(handicap.mizzen) {
+        if(handicap.mizzen.luff) items.push({ ...format.mizzen_luff, value: handicap.mizzen.luff });
+        if(handicap.mizzen.foor) items.push({ ...format.mizzen_foot, value: handicap.mizzen.foot });
+    }
+    if(handicap.topsail) {
+        if(handicap.topsail.luff) items.push({ ...format.topsail_luff, value: handicap.topsail.luff });
+        if(handicap.topsail.perpendicular) items.push({ ...format.topsail_perpendicular, value: handicap.topsail.perpendicular });
+    }
+    if(handicap.calculated_thcf) items.push({ ...format.calculated_thcf, value: handicap.calculated_thcf });
 
     return (
         <Tab.Pane>
-            <List>
-                <List.Item header='Sail area:' content={handicap.sailarea+' sq ft'} />
-                <List.Item header='Fore triangle height (I):' content={handicap.fore_triangle_height+' ft'} />
-                <List.Item header='Fore triangle base (J):' content={handicap.fore_triangle_base+' ft'} />
-                <List.Item header='Mainsail head (G):' content={handicap.main.head+' ft'} />
-                <List.Item header='Mainsail luff (H):' content={handicap.main.luff+' ft'} />
-                <List.Item header='Mainsail foot (F):' content={handicap.main.foot+' ft'} />
-                <List.Item header='Mizzen luff (H):' content={handicap.mizzen.luff+' ft'} />
-                <List.Item header='Mizzen foot (B):' content={handicap.mizzen.foot+' ft'} />
-                <List.Item header='Topsail perpendicular (TI):' content={handicap.topsail.perpendicular+' ft'} />
-                <List.Item header='Topsail luff (TH):' content={handicap.topsail.luff+' ft'} />
-                <List.Item header='Calculated T(H)CF:' content={handicap.calculated_thcf} />
-            </List>
+            <List>{items.map(i => <List.Item header={i.header} content={`${i.value} ${i.unit}`} />)}</List>
         </Tab.Pane>
     );
 }

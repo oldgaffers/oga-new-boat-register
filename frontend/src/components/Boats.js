@@ -14,9 +14,9 @@ const query = (page, boatsPerPage) => gql`{
       oga_no
       name
       image
-      year
-      homePort
-      whereBuilt
+      year_built
+      home_port
+      place_built
       builder{ name }
       class{
         name
@@ -56,23 +56,23 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
           <Segment.Group horizontal>
             <Segment>{boat.name} ({boat.oga_no})</Segment>
             <Segment></Segment>
-            <Segment>{boat.year}</Segment>
+            <Segment>{boat.year_built}</Segment>
           </Segment.Group>
         </Card.Header>
         <Card.Meta>
-          Rig Type<span className='rig_type'>{capitalise(boat.class.rigType)}</span>
+          Rig Type <span className='rig_type'>{capitalise(boat.class.rigType)}</span>
         </Card.Meta>
         <Card.Meta>
-        Built <span className='place_built'>{boat.whereBuilt}</span>
+        Built <span className='place_built'>{boat.place_built}</span>
         </Card.Meta>
         <Card.Meta>
-        Home port <span className='home_port'>{boat.homePort}</span>
+        Home port <span className='home_port'>{boat.home_port}</span>
         </Card.Meta>
         <Card.Meta>
-        Builder <span className='builder'>{boat.builder.name}</span>
+        Builder <span className='builder'>{boat.builder?boat.builder.name:''}</span>
         </Card.Meta>
         <Card.Meta>
-          Designer <span className='designer'>{boat.class.designer.name}</span>
+          Designer <span className='designer'>{boat.class.designer?boat.class.designer.name:''}</span>
         </Card.Meta>
         <Card.Description>
           <A href={"/boats/"+boat.oga_no}>View all Details</A>

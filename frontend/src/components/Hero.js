@@ -27,7 +27,7 @@ const Hero = ({ mobile }) => {
       />
       <Header
         as='h2'
-        content='Sail a beautiful traditionally rigged yacht.'
+        content='A home for traditionally rigged yachts and working craft.'
         inverted
         style={{
           fontSize: mobile ? '1.5em' : '1.7em',
