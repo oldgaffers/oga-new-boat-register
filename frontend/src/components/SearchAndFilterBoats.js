@@ -117,7 +117,6 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
                     <label>Boats Per Page</label>
                     <Dropdown onChange={(_,{value})=>pageSizeChanged(value)} defaultValue={pageOptions[1].value} selection options={pageOptions} />
                 </Form.Field>
-                <Button type='submit'>Search</Button>
                 <Button onClick={resetClicked} type='reset'>Reset</Button>
             </Form.Group>
         </Form>
