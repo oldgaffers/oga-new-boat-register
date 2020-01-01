@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const util = require('util');
 const fs = require('fs');
 const {
-   ownershipsByBoat, getTargetField, numPublishedBoats,
+   ownershipsByBoat, getTargetField, getBoats,
    buildSummaryQuery, buildBoatQuery, buildHandicapQuery,
    getImages, getFullDescription, getTargetIdsForType, getTaxonomy
 } = require('./queries');
@@ -80,21 +80,9 @@ const processBoatSummaries = async (db, l) => {
    return boats;
 }
 
-const pagedBoats = async (_, args) => {
-   console.log(args);
-   const {page, boatsPerPage} = args;
-   const boatQuery = buildSummaryQuery();
+const pagedBoats = async (_, filters) => {
    const db = makeDb(options);
-   const totalCount = await numPublishedBoats(db);
-   let start = 0;
-   let pageSize = totalCount;
-   if(boatsPerPage) {
-      pageSize = boatsPerPage;
-   }
-   if(page) {
-      start = (page-1)*pageSize;
-   }
-   const l = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
+   const {totalCount, start, page, pageSize, l} = await getBoats(db, filters);
    const boats = await processBoatSummaries(db, l);
    db.close();
    const hasNextPage = start + pageSize < totalCount;

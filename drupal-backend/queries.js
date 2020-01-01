@@ -189,6 +189,22 @@ const numBoats = async (db) => {
     ).map(({name}) => name);
 }
 
+const getBoats = async (db, filters) => {
+    const totalCount = await numPublishedBoats(db);
+    const {page, boatsPerPage} = filters;
+    const boatQuery = buildSummaryQuery();
+    let start = 0;
+    let pageSize = totalCount;
+    if(boatsPerPage) {
+       pageSize = boatsPerPage;
+    }
+    if(page) {
+       start = (page-1)*pageSize;
+    }
+    const l = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
+    return {totalCount, start, page, pageSize, l}; 
+}
+
 module.exports = { 
     ownershipsByBoat,
     getTargetField,
@@ -201,5 +217,6 @@ module.exports = {
     getImages,
     getFullDescription,
     getTargetIdsForType,
-    getTaxonomy
+    getTaxonomy,
+    getBoats
 }
