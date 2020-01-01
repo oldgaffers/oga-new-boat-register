@@ -13,6 +13,7 @@ type Query {
    genericTypes:[GenericType]
    constructionMaterials:[ConstructionMaterial]
    picLists:PicLists
+   boatNames:[String]
 }
 
 type Mutation {

@@ -1,42 +1,41 @@
-import React from 'react';
-import { Button, Dropdown, Form, Search } from 'semantic-ui-react';
+import React, { useState } from 'react';
+import { Button, Dropdown, Form } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import _ from 'lodash'
+import SearchPeople from './SearchPeople'
+import SearchBoatNames from './SearchBoatNames';
 
-const rigTypeOptions = [{key:'', text:'- Any -', value: '- Any -'}];
+const rigTypeOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
 
-const mainSailOptions = [{key:'', text:'- Any -', value: '- Any -'}];
+const mainSailOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
 
 const genericTypeOptions = [
-    {key:'', text:'- Any -', value: '- Any -'},
-    {key:'Yacht', text:'Yacht', value:'Yacht'},
+    { key: '', text: '- Any -', value: '- Any -' }
 ];
 const designClassOptions = [
-    {key:'', text:'- Any -', value: '- Any -'},
-    {key:'Hurd 28', text:'Hurd 28', value:'Hurd 28'},
+    { key: '', text: '- Any -', value: '- Any -' }
 ];
 const materialOptions = [
-    {key:'', text:'- Any -', value: '- Any -'},
-    {key:'wood', text:'wood', value:'wood'},
+    { key: '', text: '- Any -', value: '- Any -' }
 ];
 
 const sortOptions = [
-    {key:'name', text:'Boat Name', value:'name'},
-    {key:'built', text:'Year Built', value:'built'},
-    {key:'updated', text:'last updated', value:'updated'}
+    { key: 'name', text: 'Boat Name', value: 'name' },
+    { key: 'built', text: 'Year Built', value: 'built' },
+    { key: 'updated', text: 'last updated', value: 'updated' }
 ];
 const pageOptions = [];
 
-const SearchAndFilterBoats = () => {
+const SearchAndFilterBoats = ({onReset, onSearch, onUpdate}) => {
 
-    if(pageOptions.length===0) {
-        for(let i=6; i<=48; i+=6) {
-            pageOptions.push({key: i, text:`${i}`, value:i});
+    const [filters, setFilters] = useState({});
+
+    if (pageOptions.length === 0) {
+        for (let i = 6; i <= 48; i += 6) {
+            pageOptions.push({ key: i, text: `${i}`, value: i });
         };
     }
 
-    /*
     const { loading, error, data } = useQuery(gql(`{picLists{
         rigTypes
         sailTypes
@@ -44,82 +43,86 @@ const SearchAndFilterBoats = () => {
         genericTypes
         constructionMaterials        
     }}`));
+
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error :(TBD)</p>;
-    if(rigTypeOptions.length===1) {
-        data.picLists.rigTypes.forEach(v => rigTypeOptions.push({key:v, text:v, value:v}));
-        data.picLists.sailTypes.forEach(v => mainSailOptions.push({key:v, text:v, value:v}));
-        data.picLists.classNames.forEach(v => designClassOptions.push({key:v, text:v, value:v}));
-        data.picLists.genericTypes.forEach(v => genericTypeOptions.push({key:v, text:v, value:v}));
-        data.picLists.constructionMaterials.forEach(v => materialOptions.push({key:v, text:v, value:v}));
+    if (rigTypeOptions.length <= 1) {
+        data.picLists.rigTypes.forEach(v => rigTypeOptions.push({ key: v, text: v, value: v }));
+        data.picLists.sailTypes.forEach(v => mainSailOptions.push({ key: v, text: v, value: v }));
+        data.picLists.classNames.forEach(v => designClassOptions.push({ key: v, text: v, value: v }));
+        data.picLists.genericTypes.forEach(v => genericTypeOptions.push({ key: v, text: v, value: v }));
+        data.picLists.constructionMaterials.forEach(v => materialOptions.push({ key: v, text: v, value: v }));
     }
-    */
-    const handleResultSelect = (e, { result }) => {
-        console.log('handleResultSelect',result);
-    };
 
-    const handleSearchChange = (e, { value }) => {
-        console.log('handleSearchChange', value);
-    };
-  
+    const searchClicked = (e) => {
+        if(onSearch) onSearch(filters);
+    }
+
+    const resetClicked = () => {
+        setFilters({});
+        if(onReset) onReset();
+    }
+
+    const filterChanged = (field,value) => {
+        let newFilters = {...filters};
+        if(value === '- Any -') {
+            delete newFilters[field];
+        } else {
+            newFilters[field] = value;
+        }
+        if(onUpdate) onUpdate(newFilters);
+        setFilters(newFilters);
+    }
+
     return (
-<Form>
-    <Form.Group inline>
-        <Form.Field>
-            <label>Boat Name</label>
-            <Search
-            onResultSelect={handleResultSelect}
-            onSearchChange={_.debounce(handleSearchChange, 500, {
-              leading: true,
-            })}
-            />
-        </Form.Field>
-        <Form.Input size='mini' label='OGA Boat No.' type='text' />
-        <Form.Field>
-            <label>Rig Type</label>
-            <Dropdown defaultValue={rigTypeOptions[0].value} selection options={rigTypeOptions} />
-        </Form.Field>
-        <Form.Field>
-            <label>Mainsail Type</label>
-            <Dropdown defaultValue={mainSailOptions[0].value} selection options={mainSailOptions} />
-        </Form.Field>
-        <Form.Group inline>
-            <label>Year Built</label>
-            <Form.Input defaultValue='1850' size='mini' label='between' type='text' />
-            <Form.Input defaultValue='2020' size='mini' label='and' type='text' />        
-        </Form.Group>
-    </Form.Group>
-    <Form.Group inline>
-        <Form.Field><label>Previous name/s</label><Search/></Form.Field>
-        <SearchAndFilterBoats/>
-        <Form.Field><label>Builder name</label><Search/></Form.Field>
-        <Form.Field>
-            <label>Design Class</label>
-            <Dropdown defaultValue={designClassOptions[0].value} selection options={designClassOptions} />
-        </Form.Field>
-        <Form.Field>
-            <label>Generic Type</label>
-            <Dropdown defaultValue={genericTypeOptions[0].value} selection options={genericTypeOptions} />
-        </Form.Field>
-        <Form.Field>
-            <label>Construction material</label>
-            <Dropdown defaultValue={materialOptions[0].value} selection options={materialOptions} />
-        </Form.Field>
-    </Form.Group>
-    <Form.Group inline>
-        <Form.Field>
-            <label>Sort By</label>
-            <Dropdown defaultValue={sortOptions[0].value} selection options={sortOptions} />
-        </Form.Field>
-        <Form.Radio toggle label='reversed'/>
-        <Form.Field>
-            <label>Boats Per Page</label>
-            <Dropdown defaultValue={pageOptions[1].value} selection options={pageOptions} />
-        </Form.Field>
-        <Button type='submit'>Search</Button>
-        <Button type='reset'>Reset</Button>
-    </Form.Group>
-  </Form>        
+        <Form onSubmit={searchClicked}>
+            <Form.Group inline>
+                <SearchBoatNames onChange={value=>filterChanged('name',value)} label='Boat Name (incl. previous names)'/>
+                <Form.Input onChange={(_,{value})=>filterChanged('oga_no',value)} size='mini' label='OGA Boat No.' type='text' />
+                <Form.Field>
+                    <label>Rig Type</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('rigType',value)} defaultValue={rigTypeOptions[0].value} selection options={rigTypeOptions} />
+                </Form.Field>
+                <Form.Field>
+                    <label>Mainsail Type</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('sailType',value)} defaultValue={mainSailOptions[0].value} selection options={mainSailOptions} />
+                </Form.Field>
+                <Form.Group inline>
+                    <label>Year Built</label>
+                    <Form.Input onChange={(_,{value})=>filterChanged('minYear',value)} defaultValue='1850' label='between' type='text' />
+                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear ',value)} defaultValue='2020' label='and' type='text' />
+                </Form.Group>
+            </Form.Group>
+            <Form.Group inline>
+                <SearchPeople onChange={value=>filterChanged('designer',value)} label='Designers Name' field='designers'/>
+                <SearchPeople onChange={value=>filterChanged('builder',value)} label='Builders Name' field='builders'/>
+                <Form.Field>
+                    <label>Design Class</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('designClass',value)} defaultValue={designClassOptions[0].value} selection options={designClassOptions} />
+                </Form.Field>
+                <Form.Field>
+                    <label>Generic Type</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('genericType',value)} defaultValue={genericTypeOptions[0].value} selection options={genericTypeOptions} />
+                </Form.Field>
+                <Form.Field>
+                    <label>Construction material</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('constructionMaterial',value)} defaultValue={materialOptions[0].value} selection options={materialOptions} />
+                </Form.Field>
+            </Form.Group>
+            <Form.Group inline>
+                <Form.Field>
+                    <label>Sort By</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('sortBy',value)} defaultValue={sortOptions[0].value} selection options={sortOptions} />
+                </Form.Field>
+                <Form.Radio onChange={(_,{checked})=>filterChanged('reverse',checked)} toggle label='reversed' />
+                <Form.Field>
+                    <label>Boats Per Page</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('pageSize',value)} defaultValue={pageOptions[1].value} selection options={pageOptions} />
+                </Form.Field>
+                <Button type='submit'>Search</Button>
+                <Button onClick={resetClicked} type='reset'>Reset</Button>
+            </Form.Group>
+        </Form>
     )
 }
 export default SearchAndFilterBoats

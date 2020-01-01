@@ -9,9 +9,20 @@ const BrowseBoats = () => {
   const [activePage, setActivePage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [boatsPerPage] = useState(8);
+  const [filters, setFilters] = useState({});
 
   const onLoad = (totalCount) => {
     setPageCount(Math.ceil(totalCount/boatsPerPage));
+  }
+
+  const onSearch = (filters) => {
+    console.log('onSearch', filters);
+    setFilters(filters);
+  }
+
+  const onResetFilters = () => {
+    console.log('resetFilters from', filters);
+    setFilters({});
   }
 
   const onChange = (_, pageInfo) => {
@@ -19,12 +30,19 @@ const BrowseBoats = () => {
     console.log(pageInfo);
   };
 
+  const filtersUpdated = (newFilters) => {
+    console.log('filtersUpdated from', filters, 'to', newFilters);
+    setFilters(newFilters);
+  };
+
   return (
     <Container>
     <TopMenu/>
     <Header as="h1">Browse Boats</Header>
     <Container>
-      <SearchAndFilterBoats/>
+      <SearchAndFilterBoats 
+      onReset={onResetFilters} onSearch={onSearch} onUpdate={filtersUpdated}
+      />
       <Pagination 
       boundaryRange=''
       activePage={activePage}
@@ -35,7 +53,7 @@ const BrowseBoats = () => {
     </Container>
     <Divider />
     <CardGroup>
-      <Boats page={activePage} boatsPerPage={8} onLoad={onLoad} />
+      <Boats page={activePage} boatsPerPage={boatsPerPage} onLoad={onLoad} />
     </CardGroup>
     <Divider />
     <Container>

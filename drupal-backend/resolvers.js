@@ -242,6 +242,24 @@ const piclists = async () => {
    return r;
 }
 
+const boatNames = async () => {
+   const db = makeDb(options);
+   let l = await db.query(buildSummaryQuery());
+   db.close();
+   const r = {};
+   l.forEach(boat => {
+      r[boat.name.trim()] = 1
+      const p = boat.prev_name
+      if(p) {
+         p.split(',').forEach(name => {
+            const n = name.trim();
+            if(n) r[n] = 1
+         });
+      }
+   })
+   return Object.keys(r).sort();
+}
+
 const Query = {
    boats: pagedBoats,
    boat: boat,
@@ -253,7 +271,8 @@ const Query = {
    classNames:classesOfBoat,
    genericTypes:genericTypes,
    constructionMaterials:constructionMaterials,
-   picLists: piclists
+   picLists: piclists,
+   boatNames:boatNames
 }
 
 const Mutation = {

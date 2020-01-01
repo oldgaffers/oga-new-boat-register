@@ -76,6 +76,9 @@ const Boats = ({page, boatsPerPage, onLoad}) => {
         <Card.Meta>
           Designer <span className='designer'>{boat.class.designer?boat.class.designer.name:''}</span>
         </Card.Meta>
+        <Card.Meta>
+          Previous Names <span className='prev_name'>{boat.prev_name}</span>
+        </Card.Meta>
         <Card.Description>
           <A href={"/boats/"+boat.oga_no}>View all Details</A>
         </Card.Description>
