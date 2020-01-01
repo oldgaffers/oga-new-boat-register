@@ -194,8 +194,15 @@ const builtBoatFilter = (filters) => {
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
-            wheres += ` AND f${field}.field_${field}_value = ?`;
-            data.push(filters[key]); 
+            if(key === 'name') {
+                console.log('filter on name');
+                wheres += ` AND (f${field}.field_${field}_value = ? OR instr(field_prev_name_value, ?)>0)`;
+                data.push(filters[key]); 
+                data.push(filters[key]); 
+            } else {
+                wheres += ` AND f${field}.field_${field}_value = ?`;
+                data.push(filters[key]); 
+            }
         }
     });
     if(filters.minYear || filters.maxYear) {
@@ -231,6 +238,10 @@ const numFilteredBoats = async (db, filters) => {
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
+            joins += ` JOIN field_data_field_${field} f${field} ON n.nid = f${field}.entity_id`;
+        }
+        if(key === 'name') { // add prev_name
+            field = 'prev_name';
             joins += ` JOIN field_data_field_${field} f${field} ON n.nid = f${field}.entity_id`;
         }
     });
