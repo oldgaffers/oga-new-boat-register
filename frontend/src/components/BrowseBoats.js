@@ -50,11 +50,10 @@ const BrowseBoats = () => {
       onUpdate={filtersUpdated} onPageSize={pageSizeUpdated}
       />
       <Pagination 
-      boundaryRange=''
       activePage={activePage}
       onPageChange={onChange}
       totalPages={pageCount}
-      ellipsisItem='...'
+      ellipsisItem={null}
        />
     </Container>
     <Divider />
