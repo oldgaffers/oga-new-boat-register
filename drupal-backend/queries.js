@@ -56,36 +56,32 @@ const boatFields = {
 const buildFields = (fieldMap) => {
     let fields = "";
     let sep = "\n";
-    let i = 0;
     Object.keys(fieldMap).forEach(key => {
         fieldMap[key].forEach(field => {
             fields += sep;
             const asField = field.replace(/^boat_/, '');
             if(key === 'tid') {
-                fields += `(SELECT name FROM taxonomy_term_data WHERE tid=t${i}.field_${field}_${key})`
+                fields += `(SELECT name FROM taxonomy_term_data WHERE tid=f${field}.field_${field}_${key})`
             } else {
-                fields += `t${i}.field_${field}_${key}`
+                fields += `f${field}.field_${field}_${key}`
             }
             fields += ` as ${asField}`;
             sep = ",\n";
-            i++;
         });
     });
     return fields;
 }
 const buildJoins = (fieldMap) => {
     let joins = "";
-    let i = 0;
     Object.keys(fieldMap).forEach(key => {
         fieldMap[key].forEach(field => {
-            joins += `LEFT JOIN field_data_field_${field} AS t${i} ON t${i}.entity_id=node.nid\n`
-            i++;
+            joins += `LEFT JOIN field_data_field_${field} AS f${field} ON f${field}.entity_id=node.nid\n`
         });
     });
     return joins
 }
 
-const buildSummaryQuery = () => {
+const buildSummaryQuery = (extra_joins, extra_wheres) => {
     let fields = buildFields(summaryFields)+",\nf.uri";
     let joins = buildJoins(summaryFields)
     +`LEFT JOIN (
@@ -93,15 +89,18 @@ const buildSummaryQuery = () => {
         FROM field_data_field_boat_image GROUP BY entity_id
     ) z ON z.entity_id = node.nid
     LEFT JOIN file_managed f ON f.fid=z.fid`;
+    if(extra_joins) joins = `${joins} ${extra_joins}`;
+    wheres = "WHERE node.type='boat' AND node.status = 1";
+    if(extra_wheres) wheres = `${wheres} ${extra_wheres}`;
     return `SELECT node.nid as entity_id, node.changed as updated,
     node.status as published,
     ${fields}
-    FROM node\n${joins}
-    WHERE node.type='boat' AND node.status = 1`;
+    FROM node ${joins} ${wheres}
+    `;
 }
  
 const buildQuery = (id, fieldMap) => {
-    return `SELECT t0.entity_id, node.status as published, ${buildFields(fieldMap)}
+    return `SELECT n.nid as entity_id, n.status as published, ${buildFields(fieldMap)}
     FROM node\n${buildJoins(fieldMap)}
     WHERE field_boat_oga_no_value = ${id}`;
 }
@@ -161,7 +160,90 @@ const numBoats = async (db) => {
     return c[0].num;
  }
 
- const getFullDescription = async (db, id) => {
+ const fieldFilters = {
+    name: { field: "boat_name" },
+    oga_no: { field: "boat_oga_no" }
+};
+
+ const targetFilters = {
+    builder: { field: "builder" },
+    designer: { field: "designer" }
+ };
+
+ const taxonomyFilters = {
+    constructionMaterial: { field: "construction_material" },
+    designClass: { field: "design_class" },
+    rigType: { field: "rig_type" }, 
+    sailType: { field: "mainsail_type" },
+    genericType: { field: "generic_type" }
+ };
+
+const builtBoatFilter = (filters) => {
+    let wheres = "";
+    let data = [];
+    Object.keys(filters).forEach(key => {
+        if(taxonomyFilters[key]) {
+            field = taxonomyFilters[key].field;
+            wheres += ` AND t${field}.name = ?`;
+            data.push(filters[key]); 
+        }
+        if(targetFilters[key]) {
+            field = targetFilters[key].field;
+            wheres += ` AND t${field}.field_${field}_name_value = ?`;
+            data.push(filters[key]); 
+        }
+        if(fieldFilters[key]) {
+            field = fieldFilters[key].field;
+            wheres += ` AND f${field}.field_${field}_value = ?`;
+            data.push(filters[key]); 
+        }
+    });
+    if(filters.minYear || filters.maxYear) {
+        if(filters.minYear) {
+            wheres += " AND y.field_year_built_value >= ?"
+            data.push(filters.minYear);
+        }
+        if(filters.maxYear) {
+            wheres += " AND y.field_year_built_value <= ?"
+            data.push(filters.maxYear);
+        }
+    }
+    return {data, wheres};
+}
+
+const numFilteredBoats = async (db, filters) => {
+    let joins = "";
+    Object.keys(filters).forEach(key => {
+        if(taxonomyFilters[key]) {
+            field = taxonomyFilters[key].field;
+            joins += `
+            JOIN field_data_field_${field} AS f${field} ON n.nid = f${field}.entity_id
+            JOIN taxonomy_term_data AS t${key} ON f${field}.field_${field}_tid = t${key}.tid
+            `;
+        }
+        if(targetFilters[key]) {
+            field = targetFilters[key].field;
+            joins += `
+            JOIN field_data_field_${field} AS f${field} ON n.nid = f${field}.entity_id
+            JOIN field_data_field_${field}_name t${key}
+            ON f${field}.field_${field}_target_id = t${key}.entity_id
+            `;
+        }
+        if(fieldFilters[key]) {
+            field = fieldFilters[key].field;
+            joins += ` JOIN field_data_field_${field} f${field} ON n.nid = f${field}.entity_id`;
+        }
+    });
+    if(filters.minYear || filters.maxYear) {
+        joins += ` JOIN field_data_field_year_built y ON n.nid = y.entity_id`;
+    }
+    const {data, wheres} = builtBoatFilter(filters);
+    const query = `SELECT count(*) as num FROM node n ${joins} WHERE type='boat' AND status=1 ${wheres}`;
+    const c = await db.query(query, data);
+    return c[0].num;
+}
+
+const getFullDescription = async (db, id) => {
     const l = await db.query("SELECT body_value FROM field_data_body WHERE entity_id=?", [id]);
     if(l.length>0) {
         return l[0].body_value;
@@ -211,7 +293,17 @@ const getBoatsUnfiltered = async (db, {page, boatsPerPage}) => {
 const getBoats = async (db, filters) => {
     console.log('getBoats', filters);
     const totalCount = await numPublishedBoats(db);
-    let boatQuery = buildSummaryQuery();
+    const filteredCount = await numFilteredBoats(db, filters);
+    console.log('filteredCount', filteredCount);
+    const {data, wheres} = builtBoatFilter(filters);
+    let joins = "";
+    Object.keys(filters).forEach(key => {
+        if(taxonomyFilters[key]) {
+            field = taxonomyFilters[key].field;
+            joins += ` JOIN taxonomy_term_data t${field} ON f${field}.field_${field}_tid = t${key}.tid`;
+        }
+    });
+    let boatQuery = buildSummaryQuery(joins, wheres);
     let orderField = 'field_boat_name_value';
     if(filters.sortBy) {
         orderField = {
@@ -242,7 +334,7 @@ const getBoats = async (db, filters) => {
         hasNextPage = start + pageSize < totalCount;
         hasPreviousPage = page>1; 
     }
-    const boats = await db.query(boatQuery);
+    const boats = await db.query(boatQuery, data);
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }
 
