@@ -4,8 +4,28 @@ import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import {A} from 'hookrouter';
 
-const query = (page, boatsPerPage) => gql`{
-  boats(page:${page}, boatsPerPage:${boatsPerPage}) {
+const addFilters = (filters) => {
+  let r='';
+  Object.keys(filters).forEach(key => {
+    r += `, ${key}:`
+    switch(key) {
+      case 'oga_no':
+      case 'minYear':
+      case 'maxYear':
+        r += filters[key];
+        break;
+      default:
+        r += `"${filters[key]}"`;
+    }
+  });
+  console.log(r);
+  return r;
+}
+
+const query = (page, boatsPerPage, filters) => gql`{
+  boats(page:${page}, boatsPerPage:${boatsPerPage}
+    ${addFilters(filters)}
+  ) {
     totalCount
     hasNextPage
     hasPreviousPage
@@ -39,9 +59,9 @@ const capitalise = (s) => {
   return '';
 }
 
-const Boats = ({page, boatsPerPage, onLoad}) => {
+const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
-  const { loading, error, data } = useQuery(query(page, boatsPerPage));
+  const { loading, error, data } = useQuery(query(page, boatsPerPage, filters));
 
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error :(TBD)</p>;

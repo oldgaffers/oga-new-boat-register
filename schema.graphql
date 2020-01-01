@@ -4,7 +4,7 @@ type Query {
    boats(
       page:Int, boatsPerPage:Int,
       name:String, oga_no:Int,
-      rigType:RigType, sailType:SailType
+      rigType:RigType, sailType:SailType,
       minYear:Int, maxYear:Int,
       constructionMaterial:ConstructionMaterial,
       genericType:GenericType, designClass:String,

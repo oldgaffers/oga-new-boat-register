@@ -80,7 +80,9 @@ const processBoatSummaries = async (db, l) => {
    return boats;
 }
 
-const pagedBoats = async (_, { page, boatsPerPage }) => {
+const pagedBoats = async (_, args) => {
+   console.log(args);
+   const {page, boatsPerPage} = args;
    const boatQuery = buildSummaryQuery();
    const db = makeDb(options);
    const totalCount = await numPublishedBoats(db);
