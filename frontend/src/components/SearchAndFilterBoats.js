@@ -21,6 +21,7 @@ const materialOptions = [
 
 const sortOptions = [
     { key: 'name', text: 'Boat Name', value: 'name' },
+    { key: 'oga_no', text: 'OGA Boat No.', value: 'oga_no' },
     { key: 'built', text: 'Year Built', value: 'built' },
     { key: 'updated', text: 'last updated', value: 'updated' }
 ];

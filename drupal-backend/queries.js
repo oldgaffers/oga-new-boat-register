@@ -93,7 +93,9 @@ const buildSummaryQuery = () => {
         FROM field_data_field_boat_image GROUP BY entity_id
     ) z ON z.entity_id = node.nid
     LEFT JOIN file_managed f ON f.fid=z.fid`;
-    return `SELECT node.nid as entity_id, node.status as published, ${fields}
+    return `SELECT node.nid as entity_id, node.changed as updated,
+    node.status as published,
+    ${fields}
     FROM node\n${joins}
     WHERE node.type='boat' AND node.status = 1`;
 }
@@ -210,11 +212,19 @@ const getBoats = async (db, filters) => {
     console.log('getBoats', filters);
     const totalCount = await numPublishedBoats(db);
     let boatQuery = buildSummaryQuery();
+    let orderField = 'field_boat_name_value';
+    if(filters.sortBy) {
+        orderField = {
+            built:'field_year_built_value',
+            name:'field_boat_name_value',
+            oga_no:'field_boat_oga_no_value',
+            updated:'changed'
+        }[filters.sortBy];
+    }
     if(filters.reverse) {
-        console.log('reverse');
-        boatQuery += " ORDER BY field_boat_oga_no_value DESC";
+        boatQuery += ` ORDER BY ${orderField} DESC`;
     } else {
-        console.log('forward');
+        boatQuery += ` ORDER BY ${orderField} ASC`;
     }
     const {page, boatsPerPage} = filters;
     let hasNextPage = false;

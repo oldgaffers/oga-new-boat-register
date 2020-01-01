@@ -143,6 +143,7 @@ type BoatSummary {
    home_port:String
    prev_name:String
    construction_material:String
+   updated:Int
 }
 
 type ClassOfBoat {
