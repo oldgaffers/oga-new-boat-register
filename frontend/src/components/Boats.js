@@ -19,7 +19,6 @@ const addFilters = (filters) => {
         r += `"${filters[key]}"`;
     }
   });
-  console.log(r);
   return r;
 }
 
@@ -63,9 +62,15 @@ const capitalise = (s) => {
 const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
   const { loading, error, data } = useQuery(query(page, boatsPerPage, filters));
-
-  if (loading) return <p>Loading...</p>
   if (error) return <p>Error :(TBD)</p>;
+
+  if (loading) {
+    if(data) {
+      console.log("Loading set but data here");
+    } else {
+      return <p>Loading...</p>
+    }
+  }
 
   if(onLoad) {
     onLoad(data.boats.totalCount);
