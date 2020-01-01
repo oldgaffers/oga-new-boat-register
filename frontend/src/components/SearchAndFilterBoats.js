@@ -26,7 +26,7 @@ const sortOptions = [
 ];
 const pageOptions = [];
 
-const SearchAndFilterBoats = ({onReset, onSearch, onUpdate}) => {
+const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
 
     const [filters, setFilters] = useState({});
 
@@ -63,6 +63,10 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate}) => {
         if(onReset) onReset();
     }
 
+    const pageSizeChanged = (size) => {
+        if(onPageSize) onPageSize(size);
+    }
+
     const filterChanged = (field,value) => {
         let newFilters = {...filters};
         if(value === '- Any -') {
@@ -90,7 +94,7 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate}) => {
                 <Form.Group inline>
                     <label>Year Built</label>
                     <Form.Input onChange={(_,{value})=>filterChanged('minYear',value)} defaultValue='1850' label='between' type='text' />
-                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear ',value)} defaultValue='2020' label='and' type='text' />
+                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear',value)} defaultValue='2020' label='and' type='text' />
                 </Form.Group>
             </Form.Group>
             <Form.Group inline>
@@ -117,7 +121,7 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate}) => {
                 <Form.Radio onChange={(_,{checked})=>filterChanged('reverse',checked)} toggle label='reversed' />
                 <Form.Field>
                     <label>Boats Per Page</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('pageSize',value)} defaultValue={pageOptions[1].value} selection options={pageOptions} />
+                    <Dropdown onChange={(_,{value})=>pageSizeChanged(value)} defaultValue={pageOptions[1].value} selection options={pageOptions} />
                 </Form.Field>
                 <Button type='submit'>Search</Button>
                 <Button onClick={resetClicked} type='reset'>Reset</Button>
