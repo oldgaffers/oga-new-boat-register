@@ -7,15 +7,17 @@ const ImageCarousel = ({images}) => {
         <CarouselProvider
           naturalSlideWidth={16}
           naturalSlideHeight={9}
-          totalSlides={images.length}
+          totalSlides={images?images.length:0}
         >
         <Slider>
             {
-                images.map((image, i) =>(
-                    <Slide index={i}>
-                    <Image src={image.uri} />   
-                    </Slide>
-                ))
+                (images)?
+                    images.map((image, i) =>(
+                        <Slide index={i}>
+                        <Image src={image.uri} />   
+                        </Slide>
+                    ))
+                :''
             }
         </Slider>
         <ButtonBack>Back</ButtonBack>

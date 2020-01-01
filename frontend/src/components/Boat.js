@@ -7,7 +7,10 @@ import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
 
 const ImageList = ({images}) => {
-    return images.map((image, i) =>(<Image key={i} src={image.uri} />   ));
+    if(images) {
+        return images.map((image, i) =>(<Image key={i} src={image.uri} />   ));
+    }
+    return [];
 }
 
 const RegistrationAndLocation = ({boat}) => {
