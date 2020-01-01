@@ -7,16 +7,19 @@ import {A} from 'hookrouter';
 const addFilters = (filters) => {
   let r='';
   Object.keys(filters).forEach(key => {
-    r += `, ${key}:`
-    switch(key) {
-      case 'oga_no':
-      case 'minYear':
-      case 'maxYear':
-      case 'reverse':
-        r += filters[key];
-        break;
-      default:
-        r += `"${filters[key]}"`;
+    console.log('addFilters', key, filters[key]);
+    if(filters[key]) {
+      r += `, ${key}:`
+      switch(key) {
+        case 'oga_no':
+        case 'minYear':
+        case 'maxYear':
+        case 'reverse':
+          r += filters[key];
+          break;
+        default:
+          r += `"${filters[key]}"`;
+      }  
     }
   });
   return r;
