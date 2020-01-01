@@ -5,37 +5,30 @@ import { useQuery } from '@apollo/react-hooks';
 import SearchPeople from './SearchPeople'
 import SearchBoatNames from './SearchBoatNames';
 
+// Set the 'do not filter' option - the other values will be filled from the database
 const rigTypeOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
-
 const mainSailOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
+const genericTypeOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
+const designClassOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
+const materialOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
 
-const genericTypeOptions = [
-    { key: '', text: '- Any -', value: '- Any -' }
-];
-const designClassOptions = [
-    { key: '', text: '- Any -', value: '- Any -' }
-];
-const materialOptions = [
-    { key: '', text: '- Any -', value: '- Any -' }
-];
-
+// prefix the value with ! to flip the meaning of reverse
+// (this is processed in Boats.js)
 const sortOptions = [
     { key: 'name', text: 'Boat Name', value: 'name' },
     { key: 'oga_no', text: 'OGA Boat No.', value: 'oga_no' },
     { key: 'built', text: 'Year Built', value: 'built' },
-    { key: 'updated', text: 'last updated', value: 'updated' }
+    { key: 'updated', text: 'Last Updated', value: '!updated' }
 ];
+
 const pageOptions = [];
+for (let i = 6; i <= 48; i += 6) {
+    pageOptions.push({ key: i, text: `${i}`, value: i });
+};
 
 const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
 
     const [filters, setFilters] = useState({});
-
-    if (pageOptions.length === 0) {
-        for (let i = 6; i <= 48; i += 6) {
-            pageOptions.push({ key: i, text: `${i}`, value: i });
-        };
-    }
 
     const { loading, error, data } = useQuery(gql(`{picLists{
         rigTypes

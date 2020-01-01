@@ -61,7 +61,14 @@ const capitalise = (s) => {
 
 const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
-  const { loading, error, data } = useQuery(query(page, boatsPerPage, filters));
+  // reverse meaning of sort direction if requested
+  const queryFilters = {...filters};
+  if(queryFilters.sortBy && queryFilters.sortBy.startsWith('!')) {
+    queryFilters.reverse = !queryFilters.reverse;
+    queryFilters.sortBy = queryFilters.sortBy.replace('!','');
+  }
+
+  const { loading, error, data } = useQuery(query(page, boatsPerPage, queryFilters));
   if (error) return <p>Error :(TBD)</p>;
 
   if (loading) {
