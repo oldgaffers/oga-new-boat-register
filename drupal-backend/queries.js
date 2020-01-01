@@ -189,9 +189,8 @@ const numBoats = async (db) => {
     ).map(({name}) => name);
 }
 
-const getBoats = async (db, filters) => {
+const getBoatsUnfiltered = async (db, {page, boatsPerPage}) => {
     const totalCount = await numPublishedBoats(db);
-    const {page, boatsPerPage} = filters;
     const boatQuery = buildSummaryQuery();
     let start = 0;
     let pageSize = totalCount;
@@ -201,8 +200,40 @@ const getBoats = async (db, filters) => {
     if(page) {
        start = (page-1)*pageSize;
     }
-    const l = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
-    return {totalCount, start, page, pageSize, l}; 
+    const boats = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
+    const hasNextPage = start + pageSize < totalCount;
+    const hasPreviousPage = page>1; 
+    return {totalCount, hasNextPage, hasPreviousPage, boats}; 
+}
+
+const getBoats = async (db, filters) => {
+    console.log('getBoats', filters);
+    const totalCount = await numPublishedBoats(db);
+    let boatQuery = buildSummaryQuery();
+    if(filters.reverse) {
+        console.log('reverse');
+        boatQuery += " ORDER BY field_boat_oga_no_value DESC";
+    } else {
+        console.log('forward');
+    }
+    const {page, boatsPerPage} = filters;
+    let hasNextPage = false;
+    let hasPreviousPage = false;
+    if(page || boatsPerPage) {
+        let pageSize = totalCount;
+        if(boatsPerPage) {
+           pageSize = boatsPerPage;
+        }
+        let start = 0;
+        if(page) {
+           start = (page-1)*pageSize;
+        }
+        boatQuery += ` LIMIT ${start},${pageSize}`;
+        hasNextPage = start + pageSize < totalCount;
+        hasPreviousPage = page>1; 
+    }
+    const boats = await db.query(boatQuery);
+    return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }
 
 module.exports = { 
@@ -218,5 +249,6 @@ module.exports = {
     getFullDescription,
     getTargetIdsForType,
     getTaxonomy,
-    getBoats
+    getBoats,
+    getBoatsUnfiltered
 }
