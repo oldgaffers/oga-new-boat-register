@@ -12,6 +12,7 @@ const addFilters = (filters) => {
       case 'oga_no':
       case 'minYear':
       case 'maxYear':
+      case 'reverse':
         r += filters[key];
         break;
       default:
