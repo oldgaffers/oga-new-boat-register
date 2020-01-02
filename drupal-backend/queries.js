@@ -372,7 +372,6 @@ const getBoatHandicapData = async (db, id) => {
 }
 
 const getBoatPropulsionData = async (db, id) => {
-    console.log('getBoatPropulsionData', id);
     const [r] = await db.query(buildBoatNumberQuery(id, propulsionFields));
     return r;
 }
