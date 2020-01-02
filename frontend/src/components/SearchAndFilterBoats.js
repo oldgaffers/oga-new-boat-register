@@ -118,6 +118,10 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize, filters}
                 </Form.Field>
             </Form.Group>
             <Form.Group inline>
+                <Form.Radio onChange={(_,{checked})=>filterChanged('has_images',!checked)} toggle label='include boats without pictures' />
+                <Form.Radio onChange={(_,{checked})=>filterChanged('for_sale',checked)} toggle label='only boats for sale' />
+            </Form.Group>
+            <Form.Group inline>
                 <Form.Field>
                     <label>Sort By</label>
                     <Dropdown onChange={(_,{value})=>filterChanged('sortBy',value)} defaultValue={sortOptions[0].value} selection options={sortOptions} />

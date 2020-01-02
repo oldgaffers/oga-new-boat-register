@@ -13,7 +13,7 @@ const BrowseBoats = () => {
   const [activePage, setActivePage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [boatsPerPage, setBoatsPerPage] = useState(12);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({has_images:true});
 
   const onLoad = (totalCount) => {
     setPageCount(Math.ceil(totalCount/boatsPerPage));
@@ -53,12 +53,9 @@ const BrowseBoats = () => {
       onReset={onResetFilters} onSearch={onSearch} 
       onUpdate={filtersUpdated} onPageSize={pageSizeUpdated} filters={filters}
       />
-      <Pagination 
-      activePage={activePage}
-      onPageChange={onChange}
-      totalPages={pageCount}
-      ellipsisItem={null}
-       />
+      <Pagination activePage={activePage} onPageChange={onChange}
+                  totalPages={pageCount} ellipsisItem={null}
+      />
     </Container>
     <Divider />
     <CardGroup>
@@ -66,12 +63,9 @@ const BrowseBoats = () => {
     </CardGroup>
     <Divider />
     <Container>
-      <Pagination 
-      activePage={activePage}
-      onPageChange={onChange}
-      totalPages={pageCount}
-      ellipsisItem={null}
-       />
+      <Pagination activePage={activePage} onPageChange={onChange}
+                  totalPages={pageCount} ellipsisItem={null}
+      />
     </Container>
   </Container>
   );
