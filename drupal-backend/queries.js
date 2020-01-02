@@ -1,25 +1,3 @@
-const mysql = require('mysql');
-const util = require('util');
-
-const options = {
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PWD,
-    database: process.env.MYSQL_DB,
-    host: process.env.MYSQL_HOST
- }
-
- function makeDb() {
-    const connection = mysql.createConnection(options);
-    return {
-       query(sql, args) {
-          return util.promisify(connection.query)
-             .call(connection, sql, args);
-       },
-       close() {
-          return util.promisify(connection.end).call(connection);
-       }
-    };
- }
   
  const summaryFields = {
     target_id: [ 'builder', 'designer'],
@@ -48,7 +26,6 @@ const handicapFields = {
 
 const boatFields = { 
     target_id: [ 'builder', 'designer'],
-    dec_sq_feet: [ 'sailarea' ],
     dec_feet: [
         'draft', 'depth', 'draft_keel_down', 'draft_keel_up', 'beam',
         'length_on_waterline', 'length_over_spars', 'length_overall',
@@ -97,7 +74,7 @@ const buildJoins = (fieldMap) => {
     let joins = "";
     Object.keys(fieldMap).forEach(key => {
         fieldMap[key].forEach(field => {
-            joins += `\nLEFT JOIN field_data_field_${field} AS  f_${field} ON  f_${field}.entity_id=node.nid `
+            joins += `\nLEFT JOIN field_data_field_${field} AS  f_${field} ON  f_${field}.entity_id = n.nid `
             if(key === 'target_id') {
                 joins += `\nLEFT JOIN field_data_field_${field}_name AS  l_${field} ON  l_${field}.entity_id= f_${field}.field_${field}_target_id `
             }
@@ -112,34 +89,28 @@ const buildSummaryQuery = (extra_joins, extra_wheres) => {
     +` LEFT JOIN (
         SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand())
         FROM field_data_field_boat_image GROUP BY entity_id
-    ) z ON z.entity_id = node.nid
+    ) z ON z.entity_id = n.nid
     LEFT JOIN file_managed f ON f.fid=z.fid`;
     if(extra_joins) joins = `${joins} ${extra_joins}`;
-    wheres = "WHERE node.type='boat' AND node.status = 1";
+    wheres = "WHERE n.type='boat' AND n.status = 1";
     if(extra_wheres) wheres = `${wheres} ${extra_wheres}`;
-    return `SELECT node.nid as entity_id, node.changed as updated,
-    node.status as published,
+    return `SELECT n.nid as entity_id, n.changed as updated, n.status as published,
     ${fields}
-    FROM node ${joins} ${wheres}
+    FROM node AS n ${joins} ${wheres}
     `;
 }
- 
-const buildQuery = (id, fieldMap) => {
-    return `SELECT n.nid as entity_id, n.status as published, ${buildFields(fieldMap)}
-    FROM node\n${buildJoins(fieldMap)}
+
+const buildBoatNumberQuery = (id, fieldMap) => {
+    const q = `SELECT n.nid as entity_id, n.status as published, ${buildFields(fieldMap)}
+    FROM node AS n
+    ${buildJoins(fieldMap)}
     WHERE field_boat_oga_no_value = ${id}`;
-}
-
-const buildBoatQuery = (id) => {
-    return buildQuery(id, boatFields);
-}
-
-const buildHandicapQuery = (id) => {
-    return buildQuery(id, handicapFields);
+    // console.log(q);
+    return q;
 }
 
 const getTargetField = async (db, field, id) => {
-    const l = await db.query(`SELECT IFNULL(field_${field}_value,'') as name FROM field_data_field_${field} WHERE entity_id=?`, [id]);
+    const [l] = await db.query(`SELECT IFNULL(field_${field}_value,'') as name FROM field_data_field_${field} WHERE entity_id=?`, [id]);
     if(l.length>0) {
        return l[0].name;
     }
@@ -147,7 +118,7 @@ const getTargetField = async (db, field, id) => {
  }
  
 const ownershipsByBoat = async (db, id) => {
-    const l = await db.query(`
+    const [l] = await db.query(`
     SELECT
     n.field_owner_name_value as name,
     p.field_parts_owned_value as parts_owned,
@@ -171,17 +142,17 @@ const ownershipsByBoat = async (db, id) => {
  }
 
 const numBoats = async (db) => {
-    const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat'");
+    const [c] = await db.query("SELECT count(*) as num FROM node WHERE type='boat'");
     return c[0].num;
  }
  
  const numPublishedBoats = async (db) => {
-    const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=1");
+    const [c] = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=1");
     return c[0].num;
  }
  
  const numUnpublishedBoats = async (db) => {
-    const c = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=0");
+    const [c] = await db.query("SELECT count(*) as num FROM node WHERE type='boat' AND status=0");
     return c[0].num;
  }
 
@@ -281,7 +252,7 @@ const numFilteredBoats = async (db, filters) => {
     const {data, wheres} = builtBoatFilter(filters);
     const query = `SELECT count(*) as num FROM node n ${joins} WHERE type='boat' AND status=1 ${wheres}`;
     try {
-        const c = await db.query(query, data);
+        const [c] = await db.query(query, data);
         return c[0].num;
     } catch(e) {
         console.log('error counting boats', e);
@@ -290,14 +261,14 @@ const numFilteredBoats = async (db, filters) => {
 }
 
 const getFullDescription = async (db, id) => {
-    const l = await db.query("SELECT body_value FROM field_data_body WHERE entity_id=?", [id]);
+    const [l] = await db.query("SELECT body_value FROM field_data_body WHERE entity_id=?", [id]);
     if(l.length>0) {
         return l[0].body_value;
     }
  }
 
  const getImages = async (db, id) => {
-    const l = await db.query(`
+    const [l] = await db.query(`
     SELECT
        REPLACE(uri, 'public:/', 'https://oga.org.uk/sites/default/files') as uri,
        field_copyright_value as copyright
@@ -311,12 +282,12 @@ const getFullDescription = async (db, id) => {
  }
 
  const getTargetIdsForType = async (db, type) => {
-     return await db.query('SELECT title as name, nid as id FROM node WHERE type=?', [type]);
+     return (await db.query('SELECT title as name, nid as id FROM node WHERE type=?', [type]))[0];
  }
 
  const getTaxonomy = async (db, type) => {
-    return (await db.query('SELECT d.name FROM taxonomy_vocabulary v JOIN taxonomy_term_data d on d.vid = v.vid where v.machine_name=?', [type])
-    ).map(({name}) => name);
+    const [data] = await db.query('SELECT d.name FROM taxonomy_vocabulary v JOIN taxonomy_term_data d on d.vid = v.vid where v.machine_name=?', [type]);
+    return (data).map(({name}) => name);
 }
 
 const getBoatsUnfiltered = async (db, {page, boatsPerPage}) => {
@@ -330,7 +301,7 @@ const getBoatsUnfiltered = async (db, {page, boatsPerPage}) => {
     if(page) {
        start = (page-1)*pageSize;
     }
-    const boats = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
+    const [boats] = await db.query(`${boatQuery} LIMIT ${start},${pageSize}`);
     const hasNextPage = start + pageSize < totalCount;
     const hasPreviousPage = page>1; 
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
@@ -379,18 +350,26 @@ const getBoats = async (db, filters) => {
         hasNextPage = start + pageSize < totalCount;
         hasPreviousPage = page>1; 
     }
-    const boats = await db.query(boatQuery, data);
+    const [boats] = await db.query(boatQuery, data);
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }
 
-const getBoat = async (db, id) => await db.query(buildBoatQuery(id));
+const getBoatHandicapData = async (db, id) => {
+    const [r] = await db.query(buildBoatNumberQuery(id, handicapFields));
+    return r;
+}
 
-const getBoatHandicapData = async (db, id) => await db.query(buildHandicapQuery(id));
+const getBoat = async (db, id) => {
+    const [r] = await db.query(buildBoatNumberQuery(id, boatFields))
+    return r[0];
+}
 
-const getBoatSummaries = async () => await db.query(buildSummaryQuery());
+const getBoatSummaries = async (db) => {
+    const [r] = await db.query(buildSummaryQuery());
+    return r;
+}
 
-module.exports = { 
-    makeDb,
+module.exports = {
     getBoat,
     ownershipsByBoat,
     getTargetField,
