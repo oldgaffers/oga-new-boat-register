@@ -94,56 +94,47 @@ const construction = {
     builder:{name:{label:'Builder'}}
 };
 
+const hull = {
+    length_overall:{label:'Length on deck (LOD):', unit:'ft'},
+    length_on_waterline:{label:'Length on waterline (LWL):', unit:'ft'},
+    beam:{label:'Beam', unit:'ft'},
+    draft:{label:'Draft', unit:'ft'}
+};
+
+const engine = {
+    engine_make:{label:'Engine make:'},
+    engine_power:{label:'Engine power:'},
+    engine_date:{label:'Engine date:'},
+    engine_fuel:{label:'Engine fuel:'},
+    previous_engine:{label:'Previous engine(s):'},
+    propellor_blades:{label:'Propeller blades:'},
+    propellor_type:{label:'Propeller type:'},
+    propellor_position:{label:'Propeller position:'}
+};
+
 const TextTab = ({boat, labels}) => {
     let i=0;
     const l = [];
     Object.keys(boat).forEach(key => {
         if(boat[key] && labels[key]) {
             if(labels[key].label) {
-                l.push((<List.Item key={i++} header={labels[key].label} content={boat[key]} />));
+                let text = boat[key];
+                if(labels[key].unit) text = `${text} ${labels[key].unit}`
+                l.push((<List.Item key={i++} header={labels[key].label} content={text} />));
             } else {
                 const nlabels = labels[key];
                 const f = boat[key];
                 Object.keys(boat[key]).forEach(key => {
                     if(f[key] && nlabels[key]) {
-                        l.push((<List.Item key={i++} header={nlabels[key].label} content={f[key]} />));
+                        let text = f[key];
+                        if(nlabels[key].unit) text = `${text} ${nlabels[key].unit}`
+                        l.push((<List.Item key={i++} header={nlabels[key].label} content={text} />));
                     }
                 });
             }
         }
     });
     return (<Tab.Pane><List>{l}</List></Tab.Pane>);
-}
-
-
-const Hull = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Length on deck (LOD):' content={boat.length_overall+' ft'} />
-                <List.Item header='Length on waterline (LWL):' content={boat.length_on_waterline+' ft'} />
-                <List.Item header='Beam:' content={boat.beam+' ft'} />
-                <List.Item header='Draft:' content={boat.draft+' ft'} />
-            </List>
-        </Tab.Pane>
-    );
-}
-
-const Engine = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Engine make:' content={boat.engine_make} />
-                <List.Item header='Engine power:' content={boat.engine_power} />
-                <List.Item header='Engine date:' content={boat.engine_date} />
-                <List.Item header='Engine fuel:' content={boat.engine_fuel} />
-                <List.Item header='Previous engine(s):' content={boat.previous_engine} />
-                <List.Item header='Propeller blades:' content={boat.propellor_blades} />
-                <List.Item header='Propeller type:' content={boat.propellor_type} />
-                <List.Item header='Propeller position:' content={boat.propellor_position} />
-            </List>
-        </Tab.Pane>
-    );
 }
 
 const Boat = ({id}) => {
@@ -170,8 +161,8 @@ const Boat = ({id}) => {
         { menuItem: 'Registration and location', render: () => <TextTab labels={registration} boat={boat}/> },
         { menuItem: 'Rig and Sails', render: () => <RigAndSails id={id}/> },
         { menuItem: 'Construction', render: () => <TextTab labels={construction} boat={boat}/> },
-        { menuItem: 'Hull', render: () => <Hull boat={boat}/> },
-        { menuItem: 'Engine', render: () => <Engine boat={boat.propulsion}/> },
+        { menuItem: 'Hull', render: () => <TextTab labels={hull} boat={boat}/> },
+        { menuItem: 'Engine', render: () => <TextTab labels={engine} boat={boat.propulsion}/> },
       ];    
 
     return (
