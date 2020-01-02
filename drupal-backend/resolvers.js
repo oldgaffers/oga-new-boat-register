@@ -98,7 +98,6 @@ const boat = async (_, {id}, context) => {
          b.images = images;
       }
       const p = await getBoatPropulsionData(db, id);
-      console.log('propulsion', p);
       b.propulsion = p[0];
    } catch(e) {
       console.log('error in getting boat data', e);
