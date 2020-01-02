@@ -59,7 +59,7 @@ type Boat {
    call_sign:String
    construction_method:String
    current_function:String
-   fish_no:String
+   fishing_no:String
    for_sale:String
    sale_text:String
    price:String
@@ -86,6 +86,7 @@ type Boat {
    name:String
    images:[Image]
    year:Int
+   approximate_year_of_build:String
    previousNames:String
    class:ClassOfBoat
    builder:Builder

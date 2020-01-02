@@ -64,13 +64,22 @@ const boatFields = {
     'for_sale', 'price', 'sale_text'
 ]};
 
+const renames = {
+    approximate_year_of_build_:'approximate_year_of_build',
+    fish_no: 'fishing_no',
+    boat_image:'image',
+    boat_name:'name',
+    boat_oga_no:'oga_no'
+};
+
 const buildFields = (fieldMap) => {
     let fields = "";
     let sep = "\n";
     Object.keys(fieldMap).forEach(key => {
         fieldMap[key].forEach(field => {
             fields += sep;
-            const asField = field.replace(/^boat_/, '');
+            let asField = field;
+            if(renames[field]) asField = renames[field];
             if(key === 'tid') {
                 fields += `(SELECT name FROM taxonomy_term_data WHERE tid= f_${field}.field_${field}_${key})`
             } else {
