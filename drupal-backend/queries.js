@@ -1,4 +1,26 @@
- 
+const mysql = require('mysql');
+const util = require('util');
+
+const options = {
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PWD,
+    database: process.env.MYSQL_DB,
+    host: process.env.MYSQL_HOST
+ }
+
+ function makeDb() {
+    const connection = mysql.createConnection(options);
+    return {
+       query(sql, args) {
+          return util.promisify(connection.query)
+             .call(connection, sql, args);
+       },
+       close() {
+          return util.promisify(connection.end).call(connection);
+       }
+    };
+ }
+  
  const summaryFields = {
     target_id: [ 'builder', 'designer'],
     value: [
@@ -361,12 +383,19 @@ const getBoats = async (db, filters) => {
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }
 
+const getBoat = async (db, id) => await db.query(buildBoatQuery(id));
+
+const getBoatHandicapData = async (db, id) => await db.query(buildHandicapQuery(id));
+
+const getBoatSummaries = async () => await db.query(buildSummaryQuery());
+
 module.exports = { 
+    makeDb,
+    getBoat,
     ownershipsByBoat,
     getTargetField,
-    buildSummaryQuery, 
-    buildBoatQuery, 
-    buildHandicapQuery,
+    getBoatSummaries,
+    getBoatHandicapData,
     numUnpublishedBoats,
     numPublishedBoats,
     numBoats,

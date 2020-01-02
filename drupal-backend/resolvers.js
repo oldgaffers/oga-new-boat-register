@@ -1,31 +1,10 @@
-const mysql = require('mysql');
-const util = require('util');
-const fs = require('fs');
+
 const {
    ownershipsByBoat, getTargetField, getBoats,
-   buildSummaryQuery, buildBoatQuery, buildHandicapQuery,
-   getImages, getFullDescription, getTargetIdsForType, getTaxonomy
+   getBoatSummaries, getBoat, getBoatHandicapData,
+   getImages, getFullDescription, getTargetIdsForType, getTaxonomy,
+   makeDb
 } = require('./queries');
-
-function makeDb(config) {
-   const connection = mysql.createConnection(config);
-   return {
-      query(sql, args) {
-         return util.promisify(connection.query)
-            .call(connection, sql, args);
-      },
-      close() {
-         return util.promisify(connection.end).call(connection);
-      }
-   };
-}
-
-const options = {
-   user: process.env.MYSQL_USER,
-   password: process.env.MYSQL_PWD,
-   database: process.env.MYSQL_DB,
-   host: process.env.MYSQL_HOST
-}
 
 const getClass = async (db, boat) => {
    let name = `${boat.name} Class`;
@@ -81,7 +60,7 @@ const processBoatSummaries = async (db, l) => {
 }
 
 const pagedBoats = async (_, filters) => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let result = { totalCount: 0, hasNextPage: false, hasPreviousPage: false, boats: [] };
    try {
       result = await getBoats(db, filters);
@@ -94,10 +73,10 @@ const pagedBoats = async (_, filters) => {
 };
 
 const boat = async (_, {id}) => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let b = {};
    try {
-      let l = await db.query(buildBoatQuery(id));
+      let l = await getBoat(db, id);
       // only take the non-null keys from the database
       Object.keys( r).forEach(key => {
          const val =  r[key];
@@ -128,10 +107,10 @@ const boat = async (_, {id}) => {
 }
 
 const handicap = async (_, {id}) => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let r;
    try {
-      const l = await db.query(buildHandicapQuery(id));
+      const l = await getBoatHandicapData(db, id);
       r = l[0];
    } catch(e) {
       console.log('error in getting boat handicap data', e);
@@ -178,7 +157,7 @@ const handicap = async (_, {id}) => {
 }
 
 const designers = async (_, {}) => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let designers;
    try {
       designers = await getTargetIdsForType(db, 'designers');
@@ -190,7 +169,7 @@ const designers = async (_, {}) => {
 }
 
 const builders = async (_, {}) => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let builders;
    try {
       builders = await getTargetIdsForType(db, 'builders');
@@ -202,7 +181,7 @@ const builders = async (_, {}) => {
 }
 
 const taxonomy = async (name) => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let r;
    try {
       r = await getTaxonomy(db, name);
@@ -214,7 +193,7 @@ const taxonomy = async (name) => {
 }
 
 const piclists = async () => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let r;
    try {
       r = {
@@ -232,10 +211,10 @@ const piclists = async () => {
 }
 
 const boatNames = async () => {
-   const db = makeDb(options);
+   const db =  makeDb();
    let l;
    try {
-      l = await db.query(buildSummaryQuery());
+      l = await getBoatSummaries();
    } catch(e) {
       console.log('error in getting boat names', e);
    }
