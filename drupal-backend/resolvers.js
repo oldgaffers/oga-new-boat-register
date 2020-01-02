@@ -82,37 +82,46 @@ const processBoatSummaries = async (db, l) => {
 
 const pagedBoats = async (_, filters) => {
    const db = makeDb(options);
-   const result = await getBoats(db, filters);
-   result.boats = await processBoatSummaries(db, result.boats);
+   let result;
+   try {
+      result = await getBoats(db, filters);
+      result.boats = await processBoatSummaries(db, result.boats);
+   } catch(e) {
+      console.log('error in getting boat data', e);
+   }
    db.close();
    return result;
 };
 
 const boat = async (_, {id}) => {
    const db = makeDb(options);
-   let l = await db.query(buildBoatQuery(id));
-   // only take the non-null keys from the database
-   const b = {};
-   Object.keys(l[0]).forEach(key => {
-      const val = l[0][key];
-      if(val) {
-         b[key] = val;
+   let b = {};
+   try {
+      let l = await db.query(buildBoatQuery(id));
+      // only take the non-null keys from the database
+      Object.keys( r).forEach(key => {
+         const val =  r[key];
+         if(val) {
+            b[key] = val;
+         }
+      });
+      b.id = b.oga_no;
+      const builder = await getTargetField(db, "builder_name", b.builder);
+      if(builder) {
+         b.builder = {name: builder };
       }
-   });
-   b.id = b.oga_no;
-   const builder = await getTargetField(db, "builder_name", b.builder);
-   if(builder) {
-      b.builder = {name: builder };
-   }
-   const fd = getFullDescription(db, b.entity_id);
-   if(fd) {
-      b.full_desc = fd;
-   }
-   b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
-   b.class = await getClass(db, b);
-   const images = getImages(db, b.entity_id);
-   if(images) {
-      b.images = images;
+      const fd = getFullDescription(db, b.entity_id);
+      if(fd) {
+         b.full_desc = fd;
+      }
+      b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
+      b.class = await getClass(db, b);
+      const images = getImages(db, b.entity_id);
+      if(images) {
+         b.images = images;
+      }
+   } catch(e) {
+      console.log('error in getting boat data', e);
    }
    db.close();
    return b;
@@ -120,43 +129,49 @@ const boat = async (_, {id}) => {
 
 const handicap = async (_, {id}) => {
    const db = makeDb(options);
-   let l = await db.query(buildHandicapQuery(id));
+   let r;
+   try {
+      const l = await db.query(buildHandicapQuery(id));
+      r = l[0];
+   } catch(e) {
+      console.log('error in getting boat handicap data', e);
+   }
    db.close();
-   h = { 
-      oga_no: l[0].oga_no, no_head_sails: l[0].no_head_sails,
-      fore_triangle_height: l[0].fore_triangle_height,
-      fore_triangle_base: l[0].fore_triangle_base,
-      calculated_thcf: l[0].calculated_thcf,
-      sailarea: l[0].sailarea
+   let h = { 
+      oga_no:  r.oga_no, no_head_sails:  r.no_head_sails,
+      fore_triangle_height:  r.fore_triangle_height,
+      fore_triangle_base:  r.fore_triangle_base,
+      calculated_thcf:  r.calculated_thcf,
+      sailarea:  r.sailarea
     };
    h.main = {
-      foot: l[0].main_sail_foot,
-      head: l[0].mainsail_head,
-      luff: l[0].mainsail_luff
+      foot:  r.main_sail_foot,
+      head:  r.mainsail_head,
+      luff:  r.mainsail_luff
    };
-   if(l[0].mizzen_luff) {
+   if( r.mizzen_luff) {
       h.mizzen = {
-         foot: l[0].mizzen_foot,
-         head: l[0].mizzen_head,
-         luff: l[0].mizzen_luff
+         foot:  r.mizzen_foot,
+         head:  r.mizzen_head,
+         luff:  r.mizzen_luff
       };   
    }
-   if(l[0].topsail_luff) {
+   if( r.topsail_luff) {
       h.topsail = {
-         perpendicular: l[0].topsail_perpendicular,
-         luff: l[0].topsail_luff
+         perpendicular:  r.topsail_perpendicular,
+         luff:  r.topsail_luff
       };   
    }
-   if(l[0].foretopsail_luff) {
+   if( r.foretopsail_luff) {
       h.foretopsail = {
-         perpendicular: l[0].foretopsail_perpendicular,
-         luff: l[0].foretopsail_luff
+         perpendicular:  r.foretopsail_perpendicular,
+         luff:  r.foretopsail_luff
       };   
    }
-   if(l[0].mizzen_topsail_luff) {
+   if( r.mizzen_topsail_luff) {
       h.mizzen_topsail = {
-         perpendicular: l[0].mizzen_topsail_perpendicul,
-         luff: l[0].mizzen_topsail_luff
+         perpendicular:  r.mizzen_topsail_perpendicul,
+         luff:  r.mizzen_topsail_luff
       };   
    }
    return h;
@@ -164,69 +179,66 @@ const handicap = async (_, {id}) => {
 
 const designers = async (_, {}) => {
    const db = makeDb(options);
-   const designers = await getTargetIdsForType(db, 'designers');
+   let designers;
+   try {
+      designers = await getTargetIdsForType(db, 'designers');
+   } catch(e) {
+      console.log('error in getting designers data', e);
+   }
    db.close();
    return designers;
 }
 
 const builders = async (_, {}) => {
    const db = makeDb(options);
-   const builders = await getTargetIdsForType(db, 'builders');
+   let builders;
+   try {
+      builders = await getTargetIdsForType(db, 'builders');
+   } catch(e) {
+      console.log('error in getting builders data', e);
+   }
    db.close();
    return builders;
 }
 
-const rigTypes = async (_, {}) => {
+const taxonomy = async (name) => {
    const db = makeDb(options);
-   const r = await getTaxonomy(db, 'rig_type');
-   db.close();
-   return r;
-}
-
-const sailTypes = async (_, {}) => {
-   const db = makeDb(options);
-   const r = await getTaxonomy(db, 'main_sail_type');
-   db.close();
-   return r;
-}
-
-const classesOfBoat = async (_, {}) => {
-   const db = makeDb(options);
-   const r = await getTaxonomy(db, 'design_class');
-   db.close();
-   return r;
-}
-
-const genericTypes = async (_, {}) => {
-   const db = makeDb(options);
-   const r = await getTaxonomy(db, 'generic_type');
-   db.close();
-   return r;
-}
-
-const constructionMaterials = async (_, {}) => {
-   const db = makeDb(options);
-   const r = await getTaxonomy(db, 'construction_material');
+   let r;
+   try {
+      r = await getTaxonomy(db, name);
+   } catch(e) {
+      console.log('error in getting %s data', name, e);
+   }
    db.close();
    return r;
 }
 
 const piclists = async () => {
    const db = makeDb(options);
-   const r = {
-      rigTypes: await getTaxonomy(db, 'rig_type'),
-      sailTypes:await getTaxonomy(db, 'main_sail_type'),
-      classNames:await getTaxonomy(db, 'design_class'),
-      genericTypes:await getTaxonomy(db, 'generic_type'),
-      constructionMaterials:await getTaxonomy(db, 'construction_material')
-   };
+   let r;
+   try {
+      r = {
+         rigTypes: await getTaxonomy(db, 'rig_type'),
+         sailTypes:await getTaxonomy(db, 'main_sail_type'),
+         classNames:await getTaxonomy(db, 'design_class'),
+         genericTypes:await getTaxonomy(db, 'generic_type'),
+         constructionMaterials:await getTaxonomy(db, 'construction_material')
+      };
+   } catch(e) {
+      console.log('error in getting pick lists', e);
+   }
    db.close();
    return r;
 }
 
 const boatNames = async () => {
    const db = makeDb(options);
-   let l = await db.query(buildSummaryQuery());
+   let l;
+   try {
+      l = await db.query(buildSummaryQuery());
+   } catch(e) {
+      console.log('error in getting boat names', e);
+   }
    db.close();
    const r = {};
    l.forEach(boat => {
@@ -248,11 +260,11 @@ const Query = {
    handicap: handicap,
    designers: designers,
    builders: builders,
-   rigTypes:rigTypes,
-   sailTypes:sailTypes,
-   classNames:classesOfBoat,
-   genericTypes:genericTypes,
-   constructionMaterials:constructionMaterials,
+   rigTypes:async () => taxonomy('rig_type'),
+   sailTypes:async () => taxonomy('main_sail_type'),
+   classNames:async () => taxonomy('design_class'),
+   genericTypes:async () => taxonomy('generic_type'),
+   constructionMaterials:async () => taxonomy('construction_material'),
    picLists: piclists,
    boatNames:boatNames
 }
