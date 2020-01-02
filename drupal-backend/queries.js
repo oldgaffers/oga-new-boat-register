@@ -8,6 +8,19 @@
     tid: [ "rig_type", "generic_type", "mainsail_type", "design_class", "construction_material"]
  }
 
+ const propulsionFields = {
+    value: [
+    "boat_oga_no",
+    "engine_date", "engine_make", "engine_power", "hp", "previous_engine",
+     "propellor_blades"
+    ],
+    tid: [
+        // "engine_status", 
+        "engine_fuel", "engine_position",
+        "propellor_type", "propellor_position"
+    ]
+ }
+ 
 const handicapFields = {
     dec_sq_feet: [ 'sailarea' ],
     dec_feet: ['biggest_down_wind_sail_foo', 'biggest_down_wind_sail_lea', 
@@ -25,29 +38,28 @@ const handicapFields = {
 };
 
 const boatFields = { 
+    dec_sq_feet: [ 'sailarea' ],
     target_id: [ 'builder', 'designer'],
     dec_feet: [
         'draft', 'depth', 'draft_keel_down', 'draft_keel_up', 'beam',
         'length_on_waterline', 'length_over_spars', 'length_overall',
     ],
     tid: [
-        'propellor_type', 'rig_type', 'hull_type','construction_material',
-        'design_class', 'generic_type', 'engine_fuel', 'engine_position', 
-        'moving_keel_type', 'propellor_position', 'spar_material', 'home_country',
+        'rig_type', 'hull_type','construction_material',
+        'design_class', 'generic_type', 
+        'moving_keel_type', 'spar_material', 'home_country',
         'mainsail_type',
     ],
     value: [
     'approximate_year_of_build_',
 'boat_name', 'boat_oga_no',
 'call_sign', 'construction_method',
-'current_function', 'engine_date',
-'engine_make', 'engine_power', 'fish_no', 'for_sale',
-'home_port', 'hp',
-'location',
+'current_function', 'fish_no', 'for_sale',
+'home_port', 'location',
 'more_info', 'moving_keel', 'moving_keel_weight',
 'nhsr_no', 'nsbr_no', 'off_reg_no', 'original_function', 'other_registries',
 'ownerships_notes', 'place_built', 'port_reg', 'prev_name',
-'previous_engine', 'price', 'propellor_blades',
+'price', 
 'reference', 'sail_no', 'sale_text',
 'short_desc', 'special_tag', 'ssr_no'
 ]};
@@ -359,6 +371,12 @@ const getBoatHandicapData = async (db, id) => {
     return r;
 }
 
+const getBoatPropulsionData = async (db, id) => {
+    console.log('getBoatPropulsionData', id);
+    const [r] = await db.query(buildBoatNumberQuery(id, propulsionFields));
+    return r;
+}
+
 const getBoat = async (db, id) => {
     const [r] = await db.query(buildBoatNumberQuery(id, boatFields))
     return r[0];
@@ -375,6 +393,7 @@ module.exports = {
     getTargetField,
     getBoatSummaries,
     getBoatHandicapData,
+    getBoatPropulsionData,
     numUnpublishedBoats,
     numPublishedBoats,
     numBoats,
