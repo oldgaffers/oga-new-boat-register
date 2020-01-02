@@ -18,7 +18,7 @@ const client = new ApolloClient({
     uri: process.env.BACKEND?process.env.BACKEND:"http://localhost:4000/graphql"
   }),
   cache: new InMemoryCache()
-});
+}); 
 
 const routes = {
   "/": () => <Main />,
