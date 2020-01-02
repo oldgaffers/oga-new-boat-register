@@ -104,16 +104,18 @@ const boatQuery = (id) => gql`{
         draft
         length_on_waterline
         length_overall
-        propellor_type
-        propellor_position
-        propellor_blades
-        engine_fuel
-        engine_position
-        engine_date
-        engine_make
-        engine_power
-        hp
-        previous_engine
+        propulsion{
+            propellor_type
+            propellor_position
+            propellor_blades
+            engine_fuel
+            engine_position
+            engine_date
+            engine_make
+            engine_power
+            hp
+            previous_engine
+        }
     }
   }`;
 
@@ -130,7 +132,7 @@ const Boat = ({id}) => {
         { menuItem: 'Rig and Sails', render: () => <RigAndSails id={id}/> },
         { menuItem: 'Construction', render: () => <Construction boat={boat}/> },
         { menuItem: 'Hull', render: () => <Hull boat={boat}/> },
-        { menuItem: 'Engine', render: () => <Engine boat={boat}/> },
+        { menuItem: 'Engine', render: () => <Engine boat={boat.propulsion}/> },
       ];    
 
     return (
