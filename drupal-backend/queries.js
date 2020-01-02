@@ -5,7 +5,7 @@
     "boat_oga_no", "boat_name", "prev_name",
     "year_built", "place_built", "home_port"
     ],
-    tid: [ "rig_type", "mainsail_type", "design_class", "construction_material"]
+    tid: [ "rig_type", "generic_type", "mainsail_type", "design_class", "construction_material"]
  }
 
 const handicapFields = {
