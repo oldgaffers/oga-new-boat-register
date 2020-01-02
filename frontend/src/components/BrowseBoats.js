@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Boats from './Boats.js';
 import { CardGroup, Container, Divider, Header, Pagination } from 'semantic-ui-react';
 import TopMenu from './TopMenu.js';
 import SearchAndFilterBoats from './SearchAndFilterBoats.js';
 
 const BrowseBoats = () => {
+
+  useEffect(() => {
+      document.title = "Browse Boats";
+  });
 
   const [activePage, setActivePage] = useState(1);
   const [pageCount, setPageCount] = useState(0);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CarouselProvider, Image, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
+import { CarouselProvider, Image, Slider, Slide, DotGroup, ButtonFirst, ButtonLast, ButtonBack, ButtonNext } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
 
 const ImageCarousel = ({images}) => {
@@ -20,8 +20,12 @@ const ImageCarousel = ({images}) => {
                 :''
             }
         </Slider>
-        <ButtonBack>Back</ButtonBack>
-        <ButtonNext>Next</ButtonNext>
+
+        <ButtonFirst>First</ButtonFirst>
+    <ButtonBack>Back</ButtonBack>
+    <ButtonNext>Next</ButtonNext>
+    <ButtonLast>Last</ButtonLast>
+    <DotGroup />
         </CarouselProvider>
       );
   }
