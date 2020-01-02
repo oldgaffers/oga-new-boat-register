@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Boats from './Boats.js';
-import { CardGroup, Container, Divider, Header, Pagination } from 'semantic-ui-react';
+import { Responsive, CardGroup, Container, Divider, Header, Pagination } from 'semantic-ui-react';
 import TopMenu from './TopMenu.js';
+import Friendly from './Friendly.js';
 import SearchAndFilterBoats from './SearchAndFilterBoats.js';
 
 const BrowseBoats = () => {
@@ -45,7 +46,7 @@ const BrowseBoats = () => {
   };
 
   return (
-    <Container>
+  <Responsive minWidth={Responsive.onlyTablet.minWidth}>
     <TopMenu/>
     <Header as="h1">Browse Boats</Header>
     <Container>
@@ -67,7 +68,9 @@ const BrowseBoats = () => {
                   totalPages={pageCount} ellipsisItem={null}
       />
     </Container>
-  </Container>
+    <Divider />
+    <Friendly/>
+  </Responsive>
   );
 };
 

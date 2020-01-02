@@ -21,6 +21,7 @@ const DesktopContainer = ({children}) => {
     const [fixed, setFixed] = useState(false);
     return (
     <Responsive minWidth={Responsive.onlyTablet.minWidth}>
+      <TopMenu fixed={fixed} />
         <Visibility
         style={imageBackground()}
         once={false}
@@ -32,7 +33,6 @@ const DesktopContainer = ({children}) => {
             style={{ minHeight: 700, padding: '1em 0em' }}
             vertical
         >
-            <TopMenu fixed={fixed} />
             <Hero />
         </Segment>
         </Visibility>

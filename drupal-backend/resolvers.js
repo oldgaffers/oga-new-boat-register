@@ -102,7 +102,7 @@ const boat = async (_, {id}, context) => {
       b.class = await getClass(db, b);
       const images = await getImages(db, b.entity_id);
       if(images) {
-         b.images = images.map(({uri, copyright}) => {return {uri:urlMangle(uri), copyright}});
+         b.images = images.map((img) => {return {uri:urlMangle(img.uri), ...img}});
       }
       const p = await getBoatPropulsionData(db, id);
       b.propulsion = p[0];

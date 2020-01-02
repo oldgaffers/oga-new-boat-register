@@ -319,6 +319,8 @@ const getFullDescription = async (db, id) => {
  const getImages = async (db, id) => {
     const [l] = await db.query(`
     SELECT
+        field_boat_image_width as width, field_boat_image_height as height, 
+        field_boat_image_alt as alt, field_boat_image_title as title,
        REPLACE(uri, 'public:/', 'https://oga.org.uk/sites/default/files') as uri,
        field_copyright_value as copyright
        FROM field_data_field_boat_image i 

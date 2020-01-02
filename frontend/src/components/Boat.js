@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { Container, Grid, Header, Image, List, Tab, ListItem } from 'semantic-ui-react';
+import { Responsive, Container, Grid, Header, Image, List, Tab, ListItem, Divider } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import TopMenu from './TopMenu';
+import Friendly from './Friendly.js';
 import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
 
@@ -26,7 +27,9 @@ const boatQuery = (id) => gql`{
         port_reg
         short_desc
         full_desc
+        for_sale
         sale_text
+        price
         images{
             uri
             copyright
@@ -151,23 +154,29 @@ const Boat = ({id}) => {
     if (error) return <p>Error :(TBD)</p>;
     const boat = data.boat;
 
-    let full_description = boat.full_desc;
-    if(boat.sale_text) {
-        full_description += `<h3>Sales Info</h3>${boat.sale_text}'</p>`;
-    }
-
     const panes = [
-        { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: full_description}}/>},
+        { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: boat.full_desc}}/>},
         { menuItem: 'Registration and location', render: () => <TextTab labels={registration} boat={boat}/> },
         { menuItem: 'Rig and Sails', render: () => <RigAndSails id={id}/> },
         { menuItem: 'Construction', render: () => <TextTab labels={construction} boat={boat}/> },
         { menuItem: 'Hull', render: () => <TextTab labels={hull} boat={boat}/> },
         { menuItem: 'Engine', render: () => <TextTab labels={engine} boat={boat.propulsion}/> },
-      ];    
+      ];
+
+    if(boat.for_sale) {
+        let text = boat.sale_text;
+        if(boat.price) {
+            text += "<b>Price: </b>"+boat.price;
+        }
+        panes.unshift({
+            menuItem: 'For Sale', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: text}}/>
+        });
+    }  
 
     return (
+        <Responsive>
+        <TopMenu/>
         <Container>
-            <TopMenu/>
             <Grid columns={2} divided>
                 <Grid.Row>
                     <Grid.Column width={10}>
@@ -178,7 +187,7 @@ const Boat = ({id}) => {
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>
-                    <Grid.Column width={10}>
+                    <Grid.Column width={10} height={2}>
                      <ImageCarousel images={boat.images}/>
                     </Grid.Column>
                     <Grid.Column width={3}>
@@ -193,9 +202,11 @@ const Boat = ({id}) => {
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
-            <Image.Group size='tiny'><ImageList images={boat.images}/></Image.Group>
             <Tab panes={panes}/>
         </Container>
+        <Friendly/>
+  </Responsive>
+
     );
 };
 

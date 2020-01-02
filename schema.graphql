@@ -175,6 +175,10 @@ type BoatPages {
 type Image {
    uri:String
    copyright:String
+   height:Int
+   width:Int
+   title:String
+   alt:String
 }
 
 type OwnerShip {
