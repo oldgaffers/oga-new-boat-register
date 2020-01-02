@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Container, Grid, Header, Image, List, Tab } from 'semantic-ui-react';
+import { Container, Grid, Header, Image, List, Tab, ListItem } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import TopMenu from './TopMenu';
@@ -11,14 +11,22 @@ const boatQuery = (id) => gql`{
         name
         prev_name
         year
-        sail_no
+        approximate_year_of_build
         place_built
         home_country
         home_port
+        sail_no
         ssr_no
         nhsr_no
+        fishing_no
+        call_sign
+        other_registries
+        nsbr_no
+        off_reg_no
+        port_reg
         short_desc
         full_desc
+        sale_text
         images{
             uri
             copyright
@@ -52,7 +60,6 @@ const boatQuery = (id) => gql`{
     }
   }`;
 
-
 const ImageList = ({images}) => {
     if(images) {
         return images.map((image, i) =>(<Image key={i} src={image.uri} />   ));
@@ -60,35 +67,54 @@ const ImageList = ({images}) => {
     return [];
 }
 
-const RegistrationAndLocation = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Previous name/s' content={boat.prev_name} />
-                <List.Item header='Place built' content={boat.place_built} />
-                <List.Item header='Approximate Year of Build' content={boat.year} />
-                <List.Item header='Sail no.' content={boat.sail_no} />
-                <List.Item header='Home country' content={boat.home_country} />
-                <List.Item header='Small Ships Registry no. (SSR)' content={boat.ssr_no} />
-                <List.Item header='National Register of Historic Vessels no. (NRHV)' content={boat.nhsr_no} />
-        </List>
-        </Tab.Pane>
-    );
+const registration = {
+    prev_name: { label:'Previous name/s'},
+    place_built: {label:'Place built' },
+    year: {label:'Year of Build'},
+    approximate_year_of_build:{label:'Approximate Year of Build'},
+    sail_no:{label:'Sail No.'},
+    home_country:{label:'Home Country'},
+    ssr_no:{label:'Small Ships Registry no. (SSR)'},
+    nhsr_no:{label:'National Register of Historic Vessels no. (NRHV)'},
+    fishing_no:{label:'Fishing No.'},
+    call_sign:{label:'Call Sign'},
+    other_registries:{label:'Other Registrations'},
+    nsbr_no:{label:'National Small Boat Register'},
+    off_reg_no:{label:'Official Registration'},
+    port_reg:{label:'Port of Registry'}
+};
+
+const construction = {
+    construction_method:{label:'Construction method'},
+    construction_material:{label:'Construction material'},
+    class:{ 
+        hullType:{label:'Hull Type'},
+        genericType:{label:'Generic Type '},
+    },
+    builder:{name:{label:'Builder'}}
+};
+
+const TextTab = ({boat, labels}) => {
+    let i=0;
+    const l = [];
+    Object.keys(boat).forEach(key => {
+        if(boat[key] && labels[key]) {
+            if(labels[key].label) {
+                l.push((<List.Item key={i++} header={labels[key].label} content={boat[key]} />));
+            } else {
+                const nlabels = labels[key];
+                const f = boat[key];
+                Object.keys(boat[key]).forEach(key => {
+                    if(f[key] && nlabels[key]) {
+                        l.push((<List.Item key={i++} header={nlabels[key].label} content={f[key]} />));
+                    }
+                });
+            }
+        }
+    });
+    return (<Tab.Pane><List>{l}</List></Tab.Pane>);
 }
 
-const Construction = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Construction method' content={boat.construction_method} />
-                <List.Item header='Construction material' content={boat.construction_material} />
-                <List.Item header='Hull Type' content={boat.class.hullType} />
-                <List.Item header='Generic Type' content={boat.class.genericType} />
-                <List.Item header='Builder' content={boat.builder.name} />
-        </List>
-        </Tab.Pane>
-    );
-}
 
 const Hull = ({boat}) => {
     return (
@@ -134,12 +160,16 @@ const Boat = ({id}) => {
     if (error) return <p>Error :(TBD)</p>;
     const boat = data.boat;
 
+    let full_description = boat.full_desc;
+    if(boat.sale_text) {
+        full_description += `<h3>Sales Info</h3>${boat.sale_text}'</p>`;
+    }
 
     const panes = [
-        { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: boat.full_desc}}/>},
-        { menuItem: 'Registration and location', render: () => <RegistrationAndLocation boat={boat}/> },
+        { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: full_description}}/>},
+        { menuItem: 'Registration and location', render: () => <TextTab labels={registration} boat={boat}/> },
         { menuItem: 'Rig and Sails', render: () => <RigAndSails id={id}/> },
-        { menuItem: 'Construction', render: () => <Construction boat={boat}/> },
+        { menuItem: 'Construction', render: () => <TextTab labels={construction} boat={boat}/> },
         { menuItem: 'Hull', render: () => <Hull boat={boat}/> },
         { menuItem: 'Engine', render: () => <Engine boat={boat.propulsion}/> },
       ];    
@@ -167,6 +197,7 @@ const Boat = ({id}) => {
                             <List.Item header='Mainsail type:' content={boat.class.mainsailType}/>
                             <List.Item header='Rig type:' content={boat.class.rigType}/>
                             <List.Item header='Home port or other location:' content={boat.home_port}/>
+                            <ListItem><div dangerouslySetInnerHTML={{__html: boat.short_desc}}></div></ListItem>
                         </List> 
                     </Grid.Column>
                 </Grid.Row>

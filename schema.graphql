@@ -9,7 +9,8 @@ type Query {
       constructionMaterial:ConstructionMaterial,
       genericType:GenericType, designClass:String,
       builder:String, designer:String,
-      sortBy:String, reverse:Boolean
+      sortBy:String, reverse:Boolean,
+      has_images:Boolean, for_sale:Boolean
    ):BoatPages
    designers:[Designer]
    builders:[Builder]
@@ -52,20 +53,13 @@ type Boat {
    rig_type:String
    hull_type:String
    construction_material:String
-   engineStatus:EngineStatus
-   engine_fuel:String
-   engine_position:String
-   engine_date:String
-   engine_make:String
-   engine_power:Float
-   hp:Float
-   previous_engine:String
+   propulsion:PropulsionDetails
    spar_material:String
    home_country:String
    call_sign:String
    construction_method:String
    current_function:String
-   fish_no:String
+   fishing_no:String
    for_sale:String
    sale_text:String
    price:String
@@ -84,9 +78,6 @@ type Boat {
    place_built:String
    port_reg:String
    prev_name:String
-   propellor_type:String
-   propellor_position:String
-   propellor_blades:Int
    reference:String
    sail_no:String
    special_tag:String
@@ -95,6 +86,7 @@ type Boat {
    name:String
    images:[Image]
    year:Int
+   approximate_year_of_build:String
    previousNames:String
    class:ClassOfBoat
    builder:Builder
@@ -131,6 +123,19 @@ type HandicapDetails {
    mizzen:SailDimensions
 }
 
+type PropulsionDetails {
+   engine_fuel:String
+   engine_position:String
+   engine_date:String
+   engine_make:String
+   engine_power:Float
+   hp:Float
+   previous_engine:String
+   propellor_type:String
+   propellor_position:String
+   propellor_blades:Int
+}
+
 type BoatSummary {
    id:ID!
    oga_no:Int
@@ -144,6 +149,8 @@ type BoatSummary {
    prev_name:String
    construction_material:String
    updated:Int
+   image_count:Int
+   for_sale:Boolean
 }
 
 type ClassOfBoat {
@@ -194,5 +201,3 @@ scalar RigType
 scalar SailType
 scalar GenericType
 scalar ConstructionMaterial
-
-enum EngineStatus { INBOARD, OUTBOARD, NONE }
