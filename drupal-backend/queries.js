@@ -207,12 +207,12 @@ const builtBoatFilter = (filters) => {
     Object.keys(filters).forEach(key => {
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
-            wheres += ` AND t_${key}.name = ?`;
+            wheres += ` AND t_${field}.name = ?`;
             data.push(filters[key]); 
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
-            wheres += ` AND l_${key}.field_${field}_name_value = ?`;
+            wheres += ` AND l_${field}.field_${field}_name_value = ?`;
             data.push(filters[key]); 
         }
         if(fieldFilters[key]) {
@@ -255,18 +255,19 @@ const numFilteredBoats = async (db, f) => {
     Object.keys(filters).forEach(key => {
         let field, join;
         if(taxonomyFilters[key]) {
+            console.log(key, filters);
             field = taxonomyFilters[key].field;
             join = `
             JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id
-            JOIN taxonomy_term_data AS t_${key} ON f_${field}.field_${field}_tid =  t_${key}.tid
+            JOIN taxonomy_term_data AS t_${field} ON f_${field}.field_${field}_tid =  t_${field}.tid
             `;
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
             join = `
             JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id
-            JOIN field_data_field_${field}_name AS l_${key}
-            ON  f_${field}.field_${field}_target_id = l_${key}.entity_id
+            JOIN field_data_field_${field}_name AS l_${field}
+            ON  f_${field}.field_${field}_target_id = l_${field}.entity_id
             `;
         }
         if(fieldFilters[key]) {
@@ -277,17 +278,17 @@ const numFilteredBoats = async (db, f) => {
                 join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id`;
             }
         }
-        if(filters.has_images || filters.has_images === false) {
-            field = 'boat_image';
-            join = ` LEFT JOIN (
-                        SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
-                    ) image_count ON image_count.entity_id=n.nid`
-        }
         if(field && !fields_joined[field]) { // make sure only add join once
             joins += join;
            fields_joined[field] = true;
         }
     });
+    if(filters.has_images || filters.has_images === false) {
+        field = 'boat_image';
+        joins += ` LEFT JOIN (
+                    SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
+                ) image_count ON image_count.entity_id=n.nid`
+    }
     const {data, wheres} = builtBoatFilter(filters);
     const query = `SELECT count(*) as num FROM node n ${joins} WHERE n.type='boat' AND n.status=1 ${wheres}`;
     try {
@@ -355,7 +356,7 @@ const getBoats = async (db, filters) => {
     Object.keys(filters).forEach(key => {
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
-            joins += ` JOIN taxonomy_term_data AS t_${key} ON f_${field}.field_${field}_tid = t_${key}.tid`;
+            joins += ` JOIN taxonomy_term_data AS t_${field} ON f_${field}.field_${field}_tid = t_${field}.tid`;
         }
     });
     let boatQuery = buildSummaryQuery(joins, wheres);
