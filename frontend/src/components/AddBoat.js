@@ -1,10 +1,6 @@
 
 import React from 'react';
-import ApolloClient from "apollo-client";
-import { ApolloProvider } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { createHttpLink } from "apollo-link-http";
 import Boats from './Boats.js';
 import { Frontier } from "frontier-forms";
 import {
@@ -26,23 +22,14 @@ const mutation = gql`
   }
 `;
 
-const client = new ApolloClient({
-  link: createHttpLink({
-    // read-only endpoint
-    uri: "http://localhost:4000/graphql"
-  }),
-  cache: new InMemoryCache()
-});
 
 const AddBoat = () => {
   return (
-  <ApolloProvider client={client}>
     <div>
       <h2>Boat Register with Apollo <span role="img" aria-label="apollo">🚀</span></h2>
       <Boats/>
       <Frontier
           mutation={mutation}
-          client={client}
           initialValues={{ name: 'Paddy', class: 'Padstow Lugger' }}
           resetOnSave={false}
         >
@@ -87,7 +74,6 @@ const AddBoat = () => {
           }}
         </Frontier>
     </div>
-  </ApolloProvider>
   );
 };
 
