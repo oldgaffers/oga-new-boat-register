@@ -93,7 +93,7 @@ const boat = async (_, {id}, context) => {
       }
       b.currentOwnership = await ownershipsByBoat(db, b.entity_id);
       b.class = await getClass(db, b);
-      const images = getImages(db, b.entity_id);
+      const images = await getImages(db, b.entity_id);
       if(images) {
          b.images = images;
       }
