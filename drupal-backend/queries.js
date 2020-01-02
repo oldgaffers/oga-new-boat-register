@@ -99,10 +99,10 @@ const buildSummaryQuery = (extra_joins, extra_wheres) => {
     let fields = buildFields(summaryFields)+",\nf.uri";
     let joins = buildJoins(summaryFields)
     +` LEFT JOIN (
-        SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand())
+        SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
         FROM field_data_field_boat_image GROUP BY entity_id
-    ) z ON z.entity_id = n.nid
-    LEFT JOIN file_managed f ON f.fid=z.fid`;
+    ) image_count ON image_count.entity_id = n.nid
+    LEFT JOIN file_managed f ON f.fid=image_count.fid`;
     if(extra_joins) joins = `${joins} ${extra_joins}`;
     wheres = "WHERE n.type='boat' AND n.status = 1";
     if(extra_wheres) wheres = `${wheres} ${extra_wheres}`;
@@ -194,15 +194,21 @@ const numBoats = async (db) => {
 const builtBoatFilter = (filters) => {
     let wheres = "";
     let data = [];
+    if(filters.has_images) {
+        wheres += " AND image_count.num>0"
+    }
+    if(filters.has_images === false) {
+        wheres += " AND (image_count.num=0 OR ISNULL(image_count.num))"
+    }
     Object.keys(filters).forEach(key => {
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
-            wheres += ` AND  t_${key}.name = ?`;
+            wheres += ` AND t_${key}.name = ?`;
             data.push(filters[key]); 
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
-            wheres += ` AND  l_${key}.field_${field}_name_value = ?`;
+            wheres += ` AND l_${key}.field_${field}_name_value = ?`;
             data.push(filters[key]); 
         }
         if(fieldFilters[key]) {
@@ -266,6 +272,12 @@ const numFilteredBoats = async (db, f) => {
             } else {
                 join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id`;
             }
+        }
+        if(filters.has_images || filters.has_images === false) {
+            field = 'boat_image';
+            join = ` LEFT JOIN (
+                        SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
+                    ) image_count ON image_count.entity_id=n.nid`
         }
         if(field && !fields_joined[field]) { // make sure only add join once
             joins += join;
