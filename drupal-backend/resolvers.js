@@ -1,5 +1,12 @@
 const util = require('util');
 
+// found an image with a # in the name - this fixes it.
+const urlMangle = (u) => {
+   const a = u.split('/');
+   a[a.length-1] = encodeURIComponent(a[a.length-1]);
+   return a.join('/');
+ }
+
 const {
    ownershipsByBoat, getTargetField, getBoats,
    getBoatSummaries, getBoat, getBoatHandicapData, getBoatPropulsionData,
@@ -43,7 +50,7 @@ const processBoatSummaries = async (db, l) => {
    for (let i = 0; i < l.length; i++) {
       const b = l[i];
       if (b.uri) {
-         b.image = b.uri.replace('public:/', 'https://oga.org.uk/sites/default/files');
+         b.image = urlMangle(b.uri.replace('public:/', 'https://oga.org.uk/sites/default/files'));
          delete b.uri
       }
       const builder = await getTargetField(db, "builder_name", b.builder);
@@ -95,7 +102,7 @@ const boat = async (_, {id}, context) => {
       b.class = await getClass(db, b);
       const images = await getImages(db, b.entity_id);
       if(images) {
-         b.images = images;
+         b.images = images.map(({uri, copyright}) => {return {uri:urlMangle(uri), copyright}});
       }
       const p = await getBoatPropulsionData(db, id);
       b.propulsion = p[0];
