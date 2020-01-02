@@ -15,6 +15,8 @@ const addFilters = (filters) => {
         case 'minYear':
         case 'maxYear':
         case 'reverse':
+        case 'has_images':
+        case 'for_sale':
           r += filters[key];
           break;
         default:
