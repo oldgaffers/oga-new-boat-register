@@ -2,7 +2,7 @@ const util = require('util');
 
 const {
    ownershipsByBoat, getTargetField, getBoats,
-   getBoatSummaries, getBoat, getBoatHandicapData,
+   getBoatSummaries, getBoat, getBoatHandicapData, getBoatPropulsionData,
    getImages, getFullDescription, getTargetIdsForType, getTaxonomy
 } = require('./queries');
 
@@ -71,9 +71,10 @@ const pagedBoats = async (_, filters, context) => {
 };
 
 const boat = async (_, {id}, context) => {
+   const db = context.db;
    let b = {};
    try {
-      let r = await getBoat(context.db, id);
+      let r = await getBoat(db, id);
       // only take the non-null keys from the database
       Object.keys(r).forEach(key => {
          const val =  r[key];
@@ -82,7 +83,7 @@ const boat = async (_, {id}, context) => {
          }
       });
       b.id = b.oga_no;
-      const builder = await getTargetField(context.db, "builder_name", b.builder);
+      const builder = await getTargetField(db, "builder_name", b.builder);
       if(builder) {
          b.builder = {name: builder };
       }
@@ -96,6 +97,9 @@ const boat = async (_, {id}, context) => {
       if(images) {
          b.images = images;
       }
+      const p = await getBoatPropulsionData(db, id);
+      console.log('propulsion', p);
+      b.propulsion = p[0];
    } catch(e) {
       console.log('error in getting boat data', e);
    }
