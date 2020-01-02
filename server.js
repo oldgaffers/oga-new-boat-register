@@ -2,8 +2,8 @@ const { ApolloServer, gql } = require('apollo-server');
 const fs = require('fs')
 const mysql = require('mysql2');
 
-const typeDefs = gql(fs.readFileSync('./schema.graphql', 'utf8'))
-const resolvers = require('./drupal_backend/resolvers')
+const typeDefs = gql(fs.readFileSync('schema.graphql', 'utf8'))
+const resolvers = require('./drupal-backend/resolvers')
 
 const pool  = mysql.createPool({
   connectionLimit : 4,
@@ -19,6 +19,6 @@ const server = new ApolloServer({
   context: () => ({db: pool.promise() })
 });
 
-server.listen().then(({ url }) => {
+server.listen({ port: process.env.PORT || 4000 }).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
