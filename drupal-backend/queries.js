@@ -165,7 +165,10 @@ const numBoats = async (db) => {
 
  const fieldFilters = {
     name: { field: "boat_name" },
-    oga_no: { field: "boat_oga_no" }
+    oga_no: { field: "boat_oga_no" },
+    year_built: { field: "year_built" },
+    minYear: { field: "year_built" },
+    maxYear: { field: "year_built" }
 };
 
  const targetFilters = {
@@ -197,43 +200,44 @@ const builtBoatFilter = (filters) => {
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
-            if(key === 'name') {
-                console.log('filter on name');
+            switch(key) {
+            case 'name':
                 wheres += ` AND ( f_${field}.field_${field}_value = ? OR instr(field_prev_name_value, ?)>0)`;
                 data.push(filters[key]); 
-                data.push(filters[key]); 
-            } else {
+                data.push(filters[key]);
+                break; 
+            case 'minYear':
+                wheres += " AND f_year_built.field_year_built_value >= ?"
+                data.push(filters.minYear);
+                break; 
+            case 'maxYear':
+                wheres += " AND f_year_built.field_year_built_value <= ?"
+                data.push(filters.maxYear);
+                break; 
+            default:
                 wheres += ` AND  f_${field}.field_${field}_value = ?`;
                 data.push(filters[key]); 
             }
         }
     });
-    if(filters.minYear || filters.maxYear) {
-        if(filters.minYear) {
-            wheres += " AND fyear_built.field_year_built_value >= ?"
-            data.push(filters.minYear);
-        }
-        if(filters.maxYear) {
-            wheres += " AND year_built.field_year_built_value <= ?"
-            data.push(filters.maxYear);
-        }
-    }
     return {data, wheres};
 }
 
 const numFilteredBoats = async (db, filters) => {
     let joins = "";
+    let fields_joined = {};
     Object.keys(filters).forEach(key => {
+        let field, join;
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
-            joins += `
+            join = `
             JOIN field_data_field_${field} AS  f_${field} ON n.nid =  f_${field}.entity_id
             JOIN taxonomy_term_data AS  t_${key} ON  f_${field}.field_${field}_tid =  t_${key}.tid
             `;
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
-            joins += `
+            join = `
             JOIN field_data_field_${field} AS  f_${field} ON n.nid =  f_${field}.entity_id
             JOIN field_data_field_${field}_name AS  l_${key}
             ON  f_${field}.field_${field}_target_id =  l_${key}.entity_id
@@ -241,20 +245,27 @@ const numFilteredBoats = async (db, filters) => {
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
-            joins += ` JOIN field_data_field_${field}  f_${field} ON n.nid =  f_${field}.entity_id`;
+            join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid =  f_${field}.entity_id`;
         }
         if(key === 'name') { // add prev_name
             field = 'prev_name';
-            joins += ` JOIN field_data_field_${field}  f_${field} ON n.nid =  f_${field}.entity_id`;
+            join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid =  f_${field}.entity_id`;
+        }
+        if(field && !fields_joined[field]) { // make sure only add join once
+            joins += join;
+           fields_joined[field] = true;
         }
     });
-    //if(filters.minYear || filters.maxYear) {
-    //    joins += ` JOIN field_data_field_year_built y ON n.nid = y.entity_id`;
-    //}
     const {data, wheres} = builtBoatFilter(filters);
     const query = `SELECT count(*) as num FROM node n ${joins} WHERE type='boat' AND status=1 ${wheres}`;
-    const c = await db.query(query, data);
-    return c[0].num;
+    console.log(query);
+    try {
+        const c = await db.query(query, data);
+        return c[0].num;
+    } catch(e) {
+        console.log('error counting boats', e);
+    }
+    return 0;
 }
 
 const getFullDescription = async (db, id) => {
