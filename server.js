@@ -3,7 +3,7 @@ const fs = require('fs')
 const mysql = require('mysql2');
 
 const typeDefs = gql(fs.readFileSync('./schema.graphql', 'utf8'))
-const resolvers = require('.drupal_backend/resolvers')
+const resolvers = require('./drupal_backend/resolvers')
 
 const pool  = mysql.createPool({
   connectionLimit : 4,
