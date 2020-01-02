@@ -12,13 +12,20 @@ import { InMemoryCache } from "apollo-cache-inmemory";
 import { createHttpLink } from "apollo-link-http";
 import { ApolloProvider } from '@apollo/react-hooks';
 
+let backend = "http://localhost:4000/graphql";
+if(process.env.NODE_ENV==='production') {
+  backend = "https://oga-boats.herokuapp.com";
+}
+
+console.log('using backend', backend);
+
 const client = new ApolloClient({
   link: createHttpLink({
     // read-only endpoint
-    uri: process.env.BACKEND?process.env.BACKEND:"http://localhost:4000/graphql"
+    uri: backend
   }),
   cache: new InMemoryCache()
-}); 
+});
 
 const routes = {
   "/": () => <Main />,
