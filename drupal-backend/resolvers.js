@@ -1,31 +1,10 @@
-const mysql = require('mysql');
 const util = require('util');
-const fs = require('fs');
+
 const {
    ownershipsByBoat, getTargetField, getBoats,
-   buildSummaryQuery, buildBoatQuery, buildHandicapQuery,
+   getBoatSummaries, getBoat, getBoatHandicapData,
    getImages, getFullDescription, getTargetIdsForType, getTaxonomy
 } = require('./queries');
-
-function makeDb(config) {
-   const connection = mysql.createConnection(config);
-   return {
-      query(sql, args) {
-         return util.promisify(connection.query)
-            .call(connection, sql, args);
-      },
-      close() {
-         return util.promisify(connection.end).call(connection);
-      }
-   };
-}
-
-const options = {
-   user: process.env.MYSQL_USER,
-   password: process.env.MYSQL_PWD,
-   database: process.env.MYSQL_DB,
-   host: process.env.MYSQL_HOST
-}
 
 const getClass = async (db, boat) => {
    let name = `${boat.name} Class`;
@@ -80,33 +59,30 @@ const processBoatSummaries = async (db, l) => {
    return boats;
 }
 
-const pagedBoats = async (_, filters) => {
-   const db = makeDb(options);
+const pagedBoats = async (_, filters, context) => {
    let result = { totalCount: 0, hasNextPage: false, hasPreviousPage: false, boats: [] };
    try {
-      result = await getBoats(db, filters);
-      result.boats = await processBoatSummaries(db, result.boats);
+      result = await getBoats(context.db, filters);
+      result.boats = await processBoatSummaries(context.db, result.boats);
    } catch(e) {
       console.log('error in getting boat data', e);
    }
-   db.close();
    return result;
 };
 
-const boat = async (_, {id}) => {
-   const db = makeDb(options);
+const boat = async (_, {id}, context) => {
    let b = {};
    try {
-      let l = await db.query(buildBoatQuery(id));
+      let r = await getBoat(context.db, id);
       // only take the non-null keys from the database
-      Object.keys( r).forEach(key => {
+      Object.keys(r).forEach(key => {
          const val =  r[key];
          if(val) {
             b[key] = val;
          }
       });
       b.id = b.oga_no;
-      const builder = await getTargetField(db, "builder_name", b.builder);
+      const builder = await getTargetField(context.db, "builder_name", b.builder);
       if(builder) {
          b.builder = {name: builder };
       }
@@ -123,20 +99,17 @@ const boat = async (_, {id}) => {
    } catch(e) {
       console.log('error in getting boat data', e);
    }
-   db.close();
    return b;
 }
 
-const handicap = async (_, {id}) => {
-   const db = makeDb(options);
+const handicap = async (_, {id}, context) => {
    let r;
    try {
-      const l = await db.query(buildHandicapQuery(id));
+      const l = await getBoatHandicapData(context.db, id);
       r = l[0];
    } catch(e) {
       console.log('error in getting boat handicap data', e);
    }
-   db.close();
    let h = { 
       oga_no:  r.oga_no, no_head_sails:  r.no_head_sails,
       fore_triangle_height:  r.fore_triangle_height,
@@ -177,44 +150,36 @@ const handicap = async (_, {id}) => {
    return h;
 }
 
-const designers = async (_, {}) => {
-   const db = makeDb(options);
-   let designers;
+const designers = async (_p, _, context) => {
    try {
-      designers = await getTargetIdsForType(db, 'designers');
+      return await getTargetIdsForType(context.db, 'designers');
    } catch(e) {
       console.log('error in getting designers data', e);
    }
-   db.close();
-   return designers;
+   return [];
 }
 
-const builders = async (_, {}) => {
-   const db = makeDb(options);
-   let builders;
+const builders = async (_p, _, context) => {
    try {
-      builders = await getTargetIdsForType(db, 'builders');
+      return await getTargetIdsForType(context.db, 'builders');
    } catch(e) {
       console.log('error in getting builders data', e);
    }
-   db.close();
-   return builders;
+   return [];
 }
 
-const taxonomy = async (name) => {
-   const db = makeDb(options);
+const taxonomy = async (db, name) => {
    let r;
    try {
       r = await getTaxonomy(db, name);
    } catch(e) {
       console.log('error in getting %s data', name, e);
    }
-   db.close();
    return r;
 }
 
-const piclists = async () => {
-   const db = makeDb(options);
+const piclists = async (_p, _, context) => {
+   const db = context.db;
    let r;
    try {
       r = {
@@ -227,19 +192,16 @@ const piclists = async () => {
    } catch(e) {
       console.log('error in getting pick lists', e);
    }
-   db.close();
    return r;
 }
 
-const boatNames = async () => {
-   const db = makeDb(options);
+const boatNames = async (_p, _, context) => {
    let l;
    try {
-      l = await db.query(buildSummaryQuery());
+      l = await getBoatSummaries(context.db);
    } catch(e) {
       console.log('error in getting boat names', e);
    }
-   db.close();
    const r = {};
    l.forEach(boat => {
       r[boat.name.trim()] = 1
@@ -260,11 +222,11 @@ const Query = {
    handicap: handicap,
    designers: designers,
    builders: builders,
-   rigTypes:async () => taxonomy('rig_type'),
-   sailTypes:async () => taxonomy('main_sail_type'),
-   classNames:async () => taxonomy('design_class'),
-   genericTypes:async () => taxonomy('generic_type'),
-   constructionMaterials:async () => taxonomy('construction_material'),
+   rigTypes:async (_p, _, context) => taxonomy(context.db, 'rig_type'),
+   sailTypes:async (_p, _, context) => taxonomy(context.db, 'main_sail_type'),
+   classNames:async (_p, _, context) => taxonomy(context.db, 'design_class'),
+   genericTypes:async (_p, _, context) => taxonomy(context.db, 'generic_type'),
+   constructionMaterials:async (_p, _, context) => taxonomy(context.db, 'construction_material'),
    picLists: piclists,
    boatNames:boatNames
 }
