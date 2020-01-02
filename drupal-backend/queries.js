@@ -74,7 +74,11 @@ const buildFields = (fieldMap) => {
             if(key === 'tid') {
                 fields += `(SELECT name FROM taxonomy_term_data WHERE tid= f_${field}.field_${field}_${key})`
             } else {
-                fields += ` f_${field}.field_${field}_${key}`
+                if(field === 'for_sale') {
+                    fields += ` ifnull(f_${field}.field_${field}_${key}='for-sale',false)`
+                } else {
+                    fields += ` f_${field}.field_${field}_${key}`
+                }
             }
             fields += ` as ${asField}`;
             sep = ",\n";
