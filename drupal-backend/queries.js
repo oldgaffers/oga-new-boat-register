@@ -61,9 +61,9 @@ const buildFields = (fieldMap) => {
             fields += sep;
             const asField = field.replace(/^boat_/, '');
             if(key === 'tid') {
-                fields += `(SELECT name FROM taxonomy_term_data WHERE tid=f${field}.field_${field}_${key})`
+                fields += `(SELECT name FROM taxonomy_term_data WHERE tid= f_${field}.field_${field}_${key})`
             } else {
-                fields += `f${field}.field_${field}_${key}`
+                fields += ` f_${field}.field_${field}_${key}`
             }
             fields += ` as ${asField}`;
             sep = ",\n";
@@ -75,7 +75,10 @@ const buildJoins = (fieldMap) => {
     let joins = "";
     Object.keys(fieldMap).forEach(key => {
         fieldMap[key].forEach(field => {
-            joins += ` LEFT JOIN field_data_field_${field} AS f${field} ON f${field}.entity_id=node.nid\n`
+            joins += `\nLEFT JOIN field_data_field_${field} AS  f_${field} ON  f_${field}.entity_id=node.nid `
+            if(key === 'target_id') {
+                joins += `\nLEFT JOIN field_data_field_${field}_name AS  l_${field} ON  l_${field}.entity_id= f_${field}.field_${field}_target_id `
+            }
         });
     });
     return joins
@@ -184,23 +187,23 @@ const builtBoatFilter = (filters) => {
     Object.keys(filters).forEach(key => {
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
-            wheres += ` AND t${key}.name = ?`;
+            wheres += ` AND  t_${key}.name = ?`;
             data.push(filters[key]); 
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
-            wheres += ` AND l${key}.field_${field}_name_value = ?`;
+            wheres += ` AND  l_${key}.field_${field}_name_value = ?`;
             data.push(filters[key]); 
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
             if(key === 'name') {
                 console.log('filter on name');
-                wheres += ` AND (f${field}.field_${field}_value = ? OR instr(field_prev_name_value, ?)>0)`;
+                wheres += ` AND ( f_${field}.field_${field}_value = ? OR instr(field_prev_name_value, ?)>0)`;
                 data.push(filters[key]); 
                 data.push(filters[key]); 
             } else {
-                wheres += ` AND f${field}.field_${field}_value = ?`;
+                wheres += ` AND  f_${field}.field_${field}_value = ?`;
                 data.push(filters[key]); 
             }
         }
@@ -224,25 +227,25 @@ const numFilteredBoats = async (db, filters) => {
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
             joins += `
-            JOIN field_data_field_${field} AS f${field} ON n.nid = f${field}.entity_id
-            JOIN taxonomy_term_data AS t${key} ON f${field}.field_${field}_tid = t${key}.tid
+            JOIN field_data_field_${field} AS  f_${field} ON n.nid =  f_${field}.entity_id
+            JOIN taxonomy_term_data AS  t_${key} ON  f_${field}.field_${field}_tid =  t_${key}.tid
             `;
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
             joins += `
-            JOIN field_data_field_${field} AS f${field} ON n.nid = f${field}.entity_id
-            JOIN field_data_field_${field}_name AS l${key}
-            ON f${field}.field_${field}_target_id = l${key}.entity_id
+            JOIN field_data_field_${field} AS  f_${field} ON n.nid =  f_${field}.entity_id
+            JOIN field_data_field_${field}_name AS  l_${key}
+            ON  f_${field}.field_${field}_target_id =  l_${key}.entity_id
             `;
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
-            joins += ` JOIN field_data_field_${field} f${field} ON n.nid = f${field}.entity_id`;
+            joins += ` JOIN field_data_field_${field}  f_${field} ON n.nid =  f_${field}.entity_id`;
         }
         if(key === 'name') { // add prev_name
             field = 'prev_name';
-            joins += ` JOIN field_data_field_${field} f${field} ON n.nid = f${field}.entity_id`;
+            joins += ` JOIN field_data_field_${field}  f_${field} ON n.nid =  f_${field}.entity_id`;
         }
     });
     //if(filters.minYear || filters.maxYear) {
@@ -310,7 +313,7 @@ const getBoats = async (db, filters) => {
     Object.keys(filters).forEach(key => {
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
-            joins += ` JOIN taxonomy_term_data AS t${key} ON f${field}.field_${field}_tid = t${key}.tid`;
+            joins += ` JOIN taxonomy_term_data AS  t_${key} ON  f_${field}.field_${field}_tid =  t_${key}.tid`;
         }
     });
     let boatQuery = buildSummaryQuery(joins, wheres);
