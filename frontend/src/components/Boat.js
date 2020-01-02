@@ -1,10 +1,57 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Grid, Header, Image, List, Tab } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import TopMenu from './TopMenu';
 import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
+
+const boatQuery = (id) => gql`{
+    boat(id:${id}) {
+        name
+        prev_name
+        year
+        sail_no
+        place_built
+        home_country
+        home_port
+        ssr_no
+        nhsr_no
+        short_desc
+        full_desc
+        images{
+            uri
+            copyright
+        }
+        class{
+            name
+            rigType
+            mainsailType
+            hullType
+            genericType
+        }
+        builder{name}
+        construction_material
+        construction_method
+        beam
+        draft
+        length_on_waterline
+        length_overall
+        propulsion{
+            propellor_type
+            propellor_position
+            propellor_blades
+            engine_fuel
+            engine_position
+            engine_date
+            engine_make
+            engine_power
+            hp
+            previous_engine
+        }
+    }
+  }`;
+
 
 const ImageList = ({images}) => {
     if(images) {
@@ -73,58 +120,20 @@ const Engine = ({boat}) => {
     );
 }
 
-const boatQuery = (id) => gql`{
-    boat(id:${id}) {
-        name
-        prev_name
-        year
-        sail_no
-        place_built
-        home_country
-        home_port
-        ssr_no
-        nhsr_no
-        short_desc
-        full_desc
-        images{
-            uri
-            copyright
-        }
-        class{
-            name
-            rigType
-            mainsailType
-            hullType
-            genericType
-        }
-        builder{name}
-        construction_material
-        construction_method
-        beam
-        draft
-        length_on_waterline
-        length_overall
-        propulsion{
-            propellor_type
-            propellor_position
-            propellor_blades
-            engine_fuel
-            engine_position
-            engine_date
-            engine_make
-            engine_power
-            hp
-            previous_engine
-        }
-    }
-  }`;
-
 const Boat = ({id}) => {
 
     const { loading, error, data } = useQuery(boatQuery(id));
+
+    useEffect(() => {
+        if(data) {
+            document.title = data.boat.name;
+        }
+      });
+
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error :(TBD)</p>;
     const boat = data.boat;
+
 
     const panes = [
         { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: boat.full_desc}}/>},
