@@ -82,7 +82,7 @@ const processBoatSummaries = async (db, l) => {
 
 const pagedBoats = async (_, filters) => {
    const db = makeDb(options);
-   let result;
+   let result = { totalCount: 0, hasNextPage: false, hasPreviousPage: false, boats: [] };
    try {
       result = await getBoats(db, filters);
       result.boats = await processBoatSummaries(db, result.boats);
