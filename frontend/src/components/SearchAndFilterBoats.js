@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button, Dropdown, Form } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -26,9 +26,7 @@ for (let i = 6; i <= 48; i += 6) {
     pageOptions.push({ key: i, text: `${i}`, value: i });
 };
 
-const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
-
-    const [filters, setFilters] = useState({});
+const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize, filters}) => {
 
     const { loading, error, data } = useQuery(gql(`{picLists{
         rigTypes
@@ -53,7 +51,6 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
     }
 
     const resetClicked = () => {
-        setFilters({});
         if(onReset) onReset();
     }
 
@@ -69,21 +66,34 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
             newFilters[field] = value;
         }
         if(onUpdate) onUpdate(newFilters);
-        setFilters(newFilters);
     }
+
+    console.log('filters', filters);
 
     return (
         <Form onSubmit={searchClicked}>
             <Form.Group inline>
-                <SearchBoatNames onChange={value=>filterChanged('name',value)} label='Boat Name (incl. previous names)'/>
-                <Form.Input onChange={(_,{value})=>filterChanged('oga_no',value)} size='mini' label='OGA Boat No.' type='text' />
+                <SearchBoatNames onChange={value=>filterChanged('name',value)}
+                    label='Boat Name (incl. previous names)'
+                    defaultValue={filters.name}
+                />
+                <Form.Input size='mini' label='OGA Boat No.' type='text'
+                    onChange={(_,{value})=>filterChanged('oga_no',value)} 
+                    defaultValue={filters.oga_no}
+                />
                 <Form.Field>
                     <label>Rig Type</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('rigType',value)} defaultValue={rigTypeOptions[0].value} selection options={rigTypeOptions} />
+                    <Dropdown onChange={(_,{value})=>filterChanged('rigType',value)} 
+                        defaultValue={rigTypeOptions[0].value}
+                        selection options={rigTypeOptions}
+                    />
                 </Form.Field>
                 <Form.Field>
                     <label>Mainsail Type</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('sailType',value)} defaultValue={mainSailOptions[0].value} selection options={mainSailOptions} />
+                    <Dropdown onChange={(_,{value})=>filterChanged('sailType',value)}
+                        defaultValue={mainSailOptions[0].value}
+                        selection options={mainSailOptions}
+                    />
                 </Form.Field>
                 <Form.Group inline>
                     <label>Year Built</label>

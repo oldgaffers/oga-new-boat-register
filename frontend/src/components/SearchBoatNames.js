@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import _ from 'lodash'
 
-const SearchBoatNames = ({onChange, label}) => {
+const SearchBoatNames = ({onChange, label, defaultValue}) => {
 
     const [results,setResults] = useState([]);
 
@@ -30,11 +30,10 @@ const SearchBoatNames = ({onChange, label}) => {
     return (
         <Form.Field><label>{label}</label>
         <Search
-        onResultSelect={handleResultSelect}
-        onSearchChange={_.debounce(handleSearchChange, 500, {
-        leading: true,
-        })}
-        results={results}
+            onResultSelect={handleResultSelect}
+            onSearchChange={_.debounce(handleSearchChange, 500, {leading: true,})}
+            results={results}
+            defaultValue={defaultValue}
         />
         </Form.Field>
     );

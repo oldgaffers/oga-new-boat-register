@@ -51,7 +51,7 @@ const BrowseBoats = () => {
     <Container>
       <SearchAndFilterBoats 
       onReset={onResetFilters} onSearch={onSearch} 
-      onUpdate={filtersUpdated} onPageSize={pageSizeUpdated}
+      onUpdate={filtersUpdated} onPageSize={pageSizeUpdated} filters={filters}
       />
       <Pagination 
       activePage={activePage}
