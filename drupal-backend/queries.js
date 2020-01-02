@@ -51,17 +51,16 @@ const boatFields = {
         'mainsail_type',
     ],
     value: [
-    'approximate_year_of_build_',
-'boat_name', 'boat_oga_no',
-'call_sign', 'construction_method',
-'current_function', 'fish_no', 'for_sale',
-'home_port', 'location',
-'more_info', 'moving_keel', 'moving_keel_weight',
-'nhsr_no', 'nsbr_no', 'off_reg_no', 'original_function', 'other_registries',
-'ownerships_notes', 'place_built', 'port_reg', 'prev_name',
-'price', 
-'reference', 'sail_no', 'sale_text',
-'short_desc', 'special_tag', 'ssr_no'
+    'boat_name', 'boat_oga_no',
+    'year_built', 'approximate_year_of_build_',
+    'construction_method',
+    'home_port', 'location', 'place_built', 'port_reg',
+    'moving_keel', 'moving_keel_weight',
+    'fish_no', 'sail_no', 'ssr_no', 'nhsr_no', 'nsbr_no', 'off_reg_no', 
+    'other_registries', 'call_sign',
+    'ownerships_notes', 'prev_name', 'reference', 'more_info',
+    'original_function', 'current_function', 'short_desc', 'special_tag',
+    'for_sale', 'price', 'sale_text'
 ]};
 
 const buildFields = (fieldMap) => {
@@ -170,6 +169,7 @@ const numBoats = async (db) => {
 
  const fieldFilters = {
     name: { field: "boat_name" },
+    prev_name: { field: "prev_name" },
     oga_no: { field: "boat_oga_no" },
     year_built: { field: "year_built" },
     minYear: { field: "year_built" },
@@ -228,32 +228,33 @@ const builtBoatFilter = (filters) => {
     return {data, wheres};
 }
 
-const numFilteredBoats = async (db, filters) => {
+const numFilteredBoats = async (db, f) => {
     let joins = "";
     let fields_joined = {};
+    let filters = {...f};
+    if(filters.name) {
+        filters.prev_name = filters.name; // also search prev_name
+    }
+    console.log('numFilteredBoats', filters);
     Object.keys(filters).forEach(key => {
         let field, join;
         if(taxonomyFilters[key]) {
             field = taxonomyFilters[key].field;
             join = `
-            JOIN field_data_field_${field} AS  f_${field} ON n.nid =  f_${field}.entity_id
-            JOIN taxonomy_term_data AS  t_${key} ON  f_${field}.field_${field}_tid =  t_${key}.tid
+            JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id
+            JOIN taxonomy_term_data AS t_${key} ON f_${field}.field_${field}_tid =  t_${key}.tid
             `;
         }
         if(targetFilters[key]) {
             field = targetFilters[key].field;
             join = `
-            JOIN field_data_field_${field} AS  f_${field} ON n.nid =  f_${field}.entity_id
-            JOIN field_data_field_${field}_name AS  l_${key}
-            ON  f_${field}.field_${field}_target_id =  l_${key}.entity_id
+            JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id
+            JOIN field_data_field_${field}_name AS l_${key}
+            ON  f_${field}.field_${field}_target_id = l_${key}.entity_id
             `;
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
-            join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid =  f_${field}.entity_id`;
-        }
-        if(key === 'name') { // add prev_name
-            field = 'prev_name';
             join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid =  f_${field}.entity_id`;
         }
         if(field && !fields_joined[field]) { // make sure only add join once
