@@ -9,7 +9,8 @@ type Query {
       constructionMaterial:ConstructionMaterial,
       genericType:GenericType, designClass:String,
       builder:String, designer:String,
-      sortBy:String, reverse:Boolean
+      sortBy:String, reverse:Boolean,
+      has_images:Boolean, for_sale:Boolean
    ):BoatPages
    designers:[Designer]
    builders:[Builder]
@@ -147,6 +148,8 @@ type BoatSummary {
    prev_name:String
    construction_material:String
    updated:Int
+   image_count:Int
+   for_sale:Boolean
 }
 
 type ClassOfBoat {
