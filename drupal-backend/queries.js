@@ -258,7 +258,6 @@ const numFilteredBoats = async (db, filters) => {
     });
     const {data, wheres} = builtBoatFilter(filters);
     const query = `SELECT count(*) as num FROM node n ${joins} WHERE type='boat' AND status=1 ${wheres}`;
-    console.log(query);
     try {
         const c = await db.query(query, data);
         return c[0].num;
