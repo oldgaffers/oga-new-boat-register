@@ -15,7 +15,7 @@ import { ApolloProvider } from '@apollo/react-hooks';
 const client = new ApolloClient({
   link: createHttpLink({
     // read-only endpoint
-    uri: "http://localhost:4000/graphql"
+    uri: process.env.BACKEND?process.env.BACKEND:"http://localhost:4000/graphql"
   }),
   cache: new InMemoryCache()
 });
@@ -23,7 +23,7 @@ const client = new ApolloClient({
 const routes = {
   "/": () => <Main />,
   "/browse": () => <ApolloProvider client={client}><BrowseBoats /></ApolloProvider>,
-  "/add": () => <AddBoat />,
+  "/add": () => <ApolloProvider client={client}><AddBoat /></ApolloProvider>,
   "/boats/:id": ({id}) => <ApolloProvider client={client}><Boat id={id}/></ApolloProvider>
 };
 
