@@ -1,7 +1,8 @@
 import React from 'react';
-import { Card, Image, Segment } from 'semantic-ui-react'
+import { Card, Image, Segment, Divider } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import {CardItems} from "./boat-utils";
 
 const addFilters = (filters) => {
   let r='';
@@ -37,6 +38,7 @@ const query = (page, boatsPerPage, filters) => gql`{
       oga_no
       name
       image
+      short_desc
       year_built
       home_port
       place_built
@@ -54,13 +56,16 @@ const query = (page, boatsPerPage, filters) => gql`{
   }
 }`;
 
-// use this for graphQL enums
-const capitalise = (s) => {
-  if(s) {
-    return s.toLowerCase().replace(/^\w/, c => c.toUpperCase());
-  }
-  return '';
-}
+const meta = {
+  place_built: { label: "Place Built" },
+  home_port: { label: "Home Port" },
+  class: { 
+    rigType: { label: "Rig Type" },
+    designer: { name: { label: "Designer" } }
+  },
+  builder: { name: { label: "Builder" } },
+  prev_name: { name: { label: "Previous name(s)" } }
+};
 
 const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
@@ -97,24 +102,9 @@ const Boats = ({page, boatsPerPage, filters, onLoad}) => {
             <Segment>{boat.year_built}</Segment>
           </Segment.Group>
         </Card.Header>
-        <Card.Meta>
-          Rig Type <span className='rig_type'>{capitalise(boat.class.rigType)}</span>
-        </Card.Meta>
-        <Card.Meta>
-        Built <span className='place_built'>{boat.place_built}</span>
-        </Card.Meta>
-        <Card.Meta>
-        Home port <span className='home_port'>{boat.home_port}</span>
-        </Card.Meta>
-        <Card.Meta>
-        Builder <span className='builder'>{boat.builder?boat.builder.name:''}</span>
-        </Card.Meta>
-        <Card.Meta>
-          Designer <span className='designer'>{boat.class.designer?boat.class.designer.name:''}</span>
-        </Card.Meta>
-        <Card.Meta>
-          Previous Names <span className='prev_name'>{boat.prev_name}</span>
-        </Card.Meta>
+        <Card.Description dangerouslySetInnerHTML={{ __html: boat.short_desc }} />
+        <Divider/>
+        <CardItems labels={meta} boat={boat}/>
       </Card.Content>
     </Card>
   ));

@@ -401,7 +401,6 @@ const getBoats = async (db, filters) => {
         hasNextPage = start + pageSize < totalCount;
         hasPreviousPage = page>1; 
     }
-    console.log(boatQuery);
     const [boats] = await db.query(boatQuery, data);
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }

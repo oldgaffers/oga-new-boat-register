@@ -3,7 +3,7 @@ import { List, Card } from 'semantic-ui-react';
 
 export const CardItems = ({ boat, labels }) => {
     return anyItems(boat, labels, (key, label, text)=>{
-        return (<Card.Meta key={key}><strong>{label}</strong> {text}</Card.Meta>);
+        return (<Card.Meta  key={key}><strong>{label}: </strong>{text}</Card.Meta>);
     });
 }
 
@@ -14,28 +14,26 @@ export const ListItems = ({ boat, labels }) => {
 }
 
 const anyItems = (boat, labels, render) => {
-    let i = 0;
-    const l = [];
+    const l=[];
+    anyItemsR(l, 0, boat, labels, render);
+    return l;
+}
+
+const anyItemsR = (l, i, boat, labels, render) => {
     Object.keys(boat).forEach(key => {
         if (boat[key] && labels[key]) {
-            if (labels[key].label) {
+            if (typeof boat[key] === 'object') {
+                i = anyItemsR(l, i, boat[key], labels[key], render);
+            } else {
                 let text = boat[key];
                 if (labels[key].unit) text = `${text} ${labels[key].unit}`
-                l.push(render(i++, labels[key].label, text));
-            } else {
-                const nlabels = labels[key];
-                const f = boat[key];
-                Object.keys(boat[key]).forEach(key => {
-                    if (f[key] && nlabels[key]) {
-                        let text = f[key];
-                        if (nlabels[key].unit) text = `${text} ${nlabels[key].unit}`
-                        l.push(render(i++, nlabels[key].label, text));
-                    }
-                });
+                const r = render(i++, labels[key].label, text);
+                console.log(r);
+                l.push(r);
             }
         }
     });
-    return l;
+    return i;
 }
 
 export default ListItems

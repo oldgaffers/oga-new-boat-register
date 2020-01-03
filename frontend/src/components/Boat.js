@@ -6,6 +6,7 @@ import TopMenu from './TopMenu';
 import Friendly from './Friendly.js';
 import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
+import ListItems from "./boat-utils";
 
 const boatQuery = (id) => gql`{
     boat(id:${id}) {
@@ -94,31 +95,6 @@ const engine = {
     propellor_type: { label: 'Propeller type:' },
     propellor_position: { label: 'Propeller position:' }
 };
-
-const ListItems = ({ boat, labels }) => {
-    let i = 0;
-    const l = [];
-    Object.keys(boat).forEach(key => {
-        if (boat[key] && labels[key]) {
-            if (labels[key].label) {
-                let text = boat[key];
-                if (labels[key].unit) text = `${text} ${labels[key].unit}`
-                l.push((<List.Item key={i++} header={labels[key].label} content={text} />));
-            } else {
-                const nlabels = labels[key];
-                const f = boat[key];
-                Object.keys(boat[key]).forEach(key => {
-                    if (f[key] && nlabels[key]) {
-                        let text = f[key];
-                        if (nlabels[key].unit) text = `${text} ${nlabels[key].unit}`
-                        l.push((<List.Item key={i++} header={nlabels[key].label} content={text} />));
-                    }
-                });
-            }
-        }
-    });
-    return l;
-}
 
 const Boat = ({ id }) => {
 
