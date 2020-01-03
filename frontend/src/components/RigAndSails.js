@@ -55,7 +55,7 @@ const RigAndSails = ({id}) => {
     }
     if(handicap.calculated_thcf) items.push({ ...format.calculated_thcf, value: handicap.calculated_thcf });
 
-    return items.map(i => <List.Item header={i.header} content={`${i.value} ${i.unit}`} />);
+    return items.map((i, index) => <List.Item key={index} header={i.header} content={`${i.value} ${i.unit}`} />);
 }
 
 export default RigAndSails
