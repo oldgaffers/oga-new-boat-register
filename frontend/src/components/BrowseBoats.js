@@ -31,11 +31,11 @@ const BrowseBoats = () => {
 
   const [activePage, setActivePage] = useState(1);
   const [boatsPerPage, setBoatsPerPage] = useState(12);
-  const [pageCount, setPageCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   const onLoad = (totalCount) => {
-    setPageCount(Math.ceil(totalCount/boatsPerPage));
+    setTotalCount(totalCount);
   }
 
   const onResetFilters = () => {
@@ -56,32 +56,41 @@ const BrowseBoats = () => {
   const pageSizeUpdated = (size) => {
     setBoatsPerPage(size);
   };
-  
+
+  const pageCount = Math.ceil(totalCount/boatsPerPage);
+
   return (
   <Responsive minWidth={Responsive.onlyTablet.minWidth}>
     <TopMenu/>
-    <Header as="h1">Browse Boats</Header>
     <Container>
+      <Header as="h1">Browse Boats</Header>
+      <Header as="h3">
+        We have hundreds of boats with pictures and many more waiting for pictures and more information.
+      </Header>
+      <Container>Filter the list using the options below and then click on a boat for all the pictures and data we have for that boat.
+        <p>Know something we don't? We'd love to hear from you.</p>
+      </Container>
       <SearchAndFilterBoats 
       onReset={onResetFilters}
       onUpdate={filtersUpdated} onPageSize={pageSizeUpdated}
       filters={filters} boatsPerPage={boatsPerPage}
       />
-      <Pagination activePage={activePage} onPageChange={onChange}
-                  totalPages={pageCount} ellipsisItem={null}
-      />
     </Container>
-    <Divider />
-    <CardGroup>
-      <Boats page={activePage} filters={filters} boatsPerPage={boatsPerPage} onLoad={onLoad} />
-    </CardGroup>
     <Divider />
     <Container>
+    <Pagination activePage={activePage} onPageChange={onChange}
+                  totalPages={pageCount} ellipsisItem={null}
+      />
+      <Divider hidden />
+    <CardGroup centered>
+      <Boats page={activePage} filters={filters} boatsPerPage={boatsPerPage} onLoad={onLoad} />
+    </CardGroup>
+    <Divider hidden />
       <Pagination activePage={activePage} onPageChange={onChange}
                   totalPages={pageCount} ellipsisItem={null}
       />
-    </Container>
-    <Divider />
+      </Container>
+      <Divider hidden />
     <Friendly/>
   </Responsive>
   );

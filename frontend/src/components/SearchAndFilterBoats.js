@@ -75,7 +75,20 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
                     onChange={(_,{value})=>filterChanged('oga_no',value)} 
                     value={filters.oga_no?filters.oga_no:''}
                 />
-                <Form.Field>
+                <SearchPeople field='designers' onChange={value=>filterChanged('designer',value)} 
+                    label='Designers Name' value={filters.designer}
+                />
+                <SearchPeople field='builders' onChange={value=>filterChanged('builder',value)}
+                    label='Builders Name' value={filters.builder}
+                />
+                <Form.Group inline>
+                    <label>Year Built</label>
+                    <Form.Input onChange={(_,{value})=>filterChanged('minYear',value)} value={filters.minYear} label='between' type='text' />
+                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear',value)} value={filters.maxYear} label='and' type='text' />
+                </Form.Group>
+            </Form.Group>
+            <Form.Group inline>
+            <Form.Field>
                     <label>Rig Type</label>
                     <Dropdown onChange={(_,{value})=>filterChanged('rigType',value)} 
                         value={filters.rigType?filters.rigType:ANY}
@@ -89,19 +102,6 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
                         selection options={mainSailOptions}
                     />
                 </Form.Field>
-                <Form.Group inline>
-                    <label>Year Built</label>
-                    <Form.Input onChange={(_,{value})=>filterChanged('minYear',value)} value={filters.minYear} label='between' type='text' />
-                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear',value)} value={filters.maxYear} label='and' type='text' />
-                </Form.Group>
-            </Form.Group>
-            <Form.Group inline>
-                <SearchPeople field='designers' onChange={value=>filterChanged('designer',value)} 
-                    label='Designers Name' value={filters.designer}
-                />
-                <SearchPeople field='builders' onChange={value=>filterChanged('builder',value)}
-                    label='Builders Name' value={filters.builder}
-                />
                 <Form.Field>
                     <label>Design Class</label>
                     <Dropdown search selection

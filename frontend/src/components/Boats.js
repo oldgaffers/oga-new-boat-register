@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, Image, Segment } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import {A} from 'hookrouter';
 
 const addFilters = (filters) => {
   let r='';
@@ -88,7 +87,7 @@ const Boats = ({page, boatsPerPage, filters, onLoad}) => {
   }
   
   return data.boats.boats.map((boat) => (
-    <Card key={boat.id}>
+    <Card key={boat.id} href={"/boats/"+boat.oga_no}>
       <Image src={boat.image} wrapped ui={false} />
       <Card.Content>
         <Card.Header>
@@ -116,9 +115,6 @@ const Boats = ({page, boatsPerPage, filters, onLoad}) => {
         <Card.Meta>
           Previous Names <span className='prev_name'>{boat.prev_name}</span>
         </Card.Meta>
-        <Card.Description>
-          <A href={"/boats/"+boat.oga_no}>View all Details</A>
-        </Card.Description>
       </Card.Content>
     </Card>
   ));
