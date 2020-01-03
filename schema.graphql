@@ -151,6 +151,9 @@ type BoatSummary {
    updated:Int
    image_count:Int
    for_sale:Boolean
+   short_desc:String,
+   sale_text:String
+   price:String
 }
 
 type ClassOfBoat {
@@ -175,6 +178,10 @@ type BoatPages {
 type Image {
    uri:String
    copyright:String
+   height:Int
+   width:Int
+   title:String
+   alt:String
 }
 
 type OwnerShip {
