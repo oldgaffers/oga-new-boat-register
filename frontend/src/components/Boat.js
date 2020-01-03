@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Responsive, Container, Grid, Header, Image, List, Tab, ListItem, Divider } from 'semantic-ui-react';
+import { Responsive, Container, Grid, Header, List, Tab, ListItem } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import TopMenu from './TopMenu';
@@ -63,13 +63,6 @@ const boatQuery = (id) => gql`{
     }
   }`;
 
-const ImageList = ({images}) => {
-    if(images) {
-        return images.map((image, i) =>(<Image key={i} src={image.uri} />   ));
-    }
-    return [];
-}
-
 const registration = {
     prev_name: { label:'Previous name/s'},
     place_built: {label:'Place built' },
@@ -115,7 +108,7 @@ const engine = {
     propellor_position:{label:'Propeller position:'}
 };
 
-const TextTab = ({boat, labels}) => {
+const ListItems = ({boat, labels}) => {
     let i=0;
     const l = [];
     Object.keys(boat).forEach(key => {
@@ -137,7 +130,7 @@ const TextTab = ({boat, labels}) => {
             }
         }
     });
-    return (<Tab.Pane><List>{l}</List></Tab.Pane>);
+    return l;
 }
 
 const Boat = ({id}) => {
@@ -150,18 +143,25 @@ const Boat = ({id}) => {
         }
       });
 
+    const rigItems = RigAndSails({id}); // uses hooks so must be unconditional
+
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error :(TBD)</p>;
     const boat = data.boat;
 
     const panes = [
         { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: boat.full_desc}}/>},
-        { menuItem: 'Registration and location', render: () => <TextTab labels={registration} boat={boat}/> },
-        { menuItem: 'Rig and Sails', render: () => <RigAndSails id={id}/> },
-        { menuItem: 'Construction', render: () => <TextTab labels={construction} boat={boat}/> },
-        { menuItem: 'Hull', render: () => <TextTab labels={hull} boat={boat}/> },
-        { menuItem: 'Engine', render: () => <TextTab labels={engine} boat={boat.propulsion}/> },
+        { menuItem: 'Registration and location', render: () => <Tab.Pane><List><ListItems labels={registration} boat={boat}/></List></Tab.Pane>},
+        { menuItem: 'Construction', render: () => <Tab.Pane><List><ListItems labels={construction} boat={boat}/></List></Tab.Pane> },
+        { menuItem: 'Hull', render: () => <Tab.Pane><List><ListItems labels={hull} boat={boat}/></List></Tab.Pane>},
       ];
+      if(rigItems.length>0) {
+          panes.push({ menuItem: 'Rig and Sails', render: () => <Tab.Pane><List>{rigItems}</List></Tab.Pane> });
+      }
+      const engineItems = ListItems({labels:engine, boat:boat.propulsion});
+      if(engineItems.length>0) {
+          panes.push({ menuItem: 'Engine', render: () =><Tab.Pane><List>{engineItems}</List></Tab.Pane> });
+      }
 
     if(boat.for_sale) {
         let text = boat.sale_text;
@@ -201,8 +201,10 @@ const Boat = ({id}) => {
                         </List> 
                     </Grid.Column>
                 </Grid.Row>
+                <Grid.Row width={11}>
+                    <Tab stretched panes={panes}/>
+                </Grid.Row>
             </Grid>
-            <Tab panes={panes}/>
         </Container>
         <Friendly/>
   </Responsive>

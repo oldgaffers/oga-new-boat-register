@@ -1,7 +1,6 @@
 import React from 'react';
 import { CarouselProvider, Image, Slider, Slide, DotGroup, ButtonFirst, ButtonLast, ButtonBack, ButtonNext } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
-import { Container } from 'semantic-ui-react';
 
 const ImageCarousel = ({images}) => {
       return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Tab } from 'semantic-ui-react';
+import { List } from 'semantic-ui-react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
@@ -55,11 +55,7 @@ const RigAndSails = ({id}) => {
     }
     if(handicap.calculated_thcf) items.push({ ...format.calculated_thcf, value: handicap.calculated_thcf });
 
-    return (
-        <Tab.Pane>
-            <List>{items.map(i => <List.Item header={i.header} content={`${i.value} ${i.unit}`} />)}</List>
-        </Tab.Pane>
-    );
+    return items.map(i => <List.Item header={i.header} content={`${i.value} ${i.unit}`} />);
 }
 
 export default RigAndSails
