@@ -4,7 +4,7 @@
     value: [
     "boat_oga_no", "boat_name", "prev_name",
     "year_built", "place_built", "home_port",
-    "for_sale"
+    "for_sale", "short_desc", "sale_text", "price"
     ],
     tid: [ "rig_type", "generic_type", "mainsail_type", "design_class", "construction_material"]
  }
@@ -401,6 +401,7 @@ const getBoats = async (db, filters) => {
         hasNextPage = start + pageSize < totalCount;
         hasPreviousPage = page>1; 
     }
+    console.log(boatQuery);
     const [boats] = await db.query(boatQuery, data);
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }
