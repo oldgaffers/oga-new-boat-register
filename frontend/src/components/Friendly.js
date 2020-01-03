@@ -47,7 +47,6 @@ const Friendly = () => (
                 We offer crewing opportunities on small and larger boats.
                 We are happy to share our thoughts on the pitfalls to avoid when buying a boat.
               Membership has been a life-changing experience for more than one of our members.
-              and
             </p>
           </Grid.Column>
         </Grid.Row>
