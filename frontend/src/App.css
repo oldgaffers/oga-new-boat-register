@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+
+.Br-tall {
+  height:fit-content
+}
+
+.Br-copyright-outer {
+  color:whitesmoke;
+  height: inherit
+}
+
+.Br-copyright-inner {
+  bottom:10px; left:10px; 
+  position:absolute
+}
