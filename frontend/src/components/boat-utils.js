@@ -28,7 +28,6 @@ const anyItemsR = (l, i, boat, labels, render) => {
                 let text = boat[key];
                 if (labels[key].unit) text = `${text} ${labels[key].unit}`
                 const r = render(i++, labels[key].label, text);
-                console.log(r);
                 l.push(r);
             }
         }

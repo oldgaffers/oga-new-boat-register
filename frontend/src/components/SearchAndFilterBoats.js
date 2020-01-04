@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Dropdown, Form } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -14,13 +14,11 @@ const genericTypeOptions = [{ key: '', text: ANY, value: ANY }];
 const designClassOptions = [{ key: '', text: ANY, value: ANY }];
 const materialOptions = [{ key: '', text: ANY, value: ANY }];
 
-// prefix the value with ! to flip the meaning of reverse
-// (this is processed in Boats.js)
 const sortOptions = [
     { key: 'name', text: 'Boat Name', value: 'name' },
     { key: 'oga_no', text: 'OGA Boat No.', value: 'oga_no' },
     { key: 'built', text: 'Year Built', value: 'built' },
-    { key: 'updated', text: 'Last Updated', value: '!updated' }
+    { key: 'updated', text: 'Last Updated', value: 'updated' }
 ];
 
 const pageOptions = [];
@@ -30,6 +28,8 @@ for (let i = 6; i <= 48; i += 6) {
 
 const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filters}) => {
     
+    const [reverse, setReverse] = useState(false);
+
     const { loading, error, data } = useQuery(gql(`{picLists{
         rigTypes
         sailTypes
@@ -53,9 +53,22 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
     }
 
     const filterChanged = (field,value) => {
+
         let newFilters = {...filters};
+
+        console.log('filterChanged',field, value, reverse);
+        if(field === 'sortBy') {
+            // also set sort direction
+            newFilters.reverse = (value === 'updated')?(!reverse):reverse;
+        }
+        console.log('filterChanged to',newFilters);
+
+        if(field === 'reverse') {
+            setReverse(value);
+        }
+
         if(value === ANY) {
-            delete newFilters[field];
+            newFilters[field] = null;
         } else {
             newFilters[field] = value;
         }
@@ -125,7 +138,7 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
                 </Form.Field>
             </Form.Group>
             <Form.Group inline>
-                <Form.Radio onChange={(_,{checked})=>filterChanged('has_images',!checked)} toggle label='include boats without pictures' />
+                <Form.Radio onChange={(_,{checked})=>filterChanged('has_images',checked?null:true)} toggle label='include boats without pictures' />
                 <Form.Radio onChange={(_,{checked})=>filterChanged('for_sale',checked)} toggle label='only boats for sale' />
             </Form.Group>
             <Form.Group inline>
