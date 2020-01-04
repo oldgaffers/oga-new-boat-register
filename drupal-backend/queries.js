@@ -183,7 +183,6 @@ const numBoats = async (db) => {
 
  const fieldFilters = {
     name: { field: "boat_name" },
-    prev_name: { field: "prev_name" },
     oga_no: { field: "boat_oga_no" },
     year_built: { field: "year_built" },
     minYear: { field: "year_built" },
@@ -257,9 +256,6 @@ const numFilteredBoats = async (db, f) => {
     let joins = "";
     let fields_joined = {};
     let filters = {...f};
-    if(filters.name) {
-        filters.prev_name = filters.name; // also search prev_name
-    }
     console.log('numFilteredBoats', filters);
     Object.keys(filters).forEach(key => {
         let field, join;
@@ -281,9 +277,15 @@ const numFilteredBoats = async (db, f) => {
         }
         if(fieldFilters[key]) {
             field = fieldFilters[key].field;
-            if(key === 'for_sale') { // for sale is not present if never has been set
+            switch(key) {
+            case 'for_sale': // for sale is not present if never has been set
                 join = ` LEFT JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id`;
-            } else {
+                break;
+            case 'name': // name and prev_name fields are searched but prev_name is optional
+                join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id`;
+                join += ` LEFT JOIN field_data_field_prev_name AS f_prev_name ON n.nid = f_prev_name.entity_id`;
+                break;
+            default:
                 join = ` JOIN field_data_field_${field} AS f_${field} ON n.nid = f_${field}.entity_id`;
             }
         }
@@ -300,6 +302,7 @@ const numFilteredBoats = async (db, f) => {
     }
     const {data, wheres} = builtBoatFilter(filters);
     const query = `SELECT count(*) as num FROM node n ${joins} WHERE n.type='boat' AND n.status=1 ${wheres}`;
+    console.log('num', query);
     try {
         const [c] = await db.query(query, data);
         return c[0].num;
@@ -401,6 +404,7 @@ const getBoats = async (db, filters) => {
         hasNextPage = start + pageSize < totalCount;
         hasPreviousPage = page>1; 
     }
+    console.log('boats', boatQuery);
     const [boats] = await db.query(boatQuery, data);
     return {totalCount, hasNextPage, hasPreviousPage, boats}; 
 }
