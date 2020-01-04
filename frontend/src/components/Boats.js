@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Image, Segment, Divider } from 'semantic-ui-react'
+import { Card, Image, Segment, Divider, Container } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import {CardItems} from "./boat-utils";
@@ -69,14 +69,7 @@ const meta = {
 
 const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
-  // reverse meaning of sort direction if requested
-  const queryFilters = {...filters};
-  if(queryFilters.sortBy && queryFilters.sortBy.startsWith('!')) {
-    queryFilters.reverse = !queryFilters.reverse;
-    queryFilters.sortBy = queryFilters.sortBy.replace('!','');
-  }
-
-  const { loading, error, data } = useQuery(query(page, boatsPerPage, queryFilters));
+  const { loading, error, data } = useQuery(query(page, boatsPerPage, filters));
   if (error) return <p>Error :(TBD)</p>;
 
   if (loading) {
@@ -89,6 +82,48 @@ const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
   if(onLoad) {
     onLoad(data.boats.totalCount);
+  }
+
+  if(data.boats.totalCount === 0) {
+    return (<Container><p>There are no boats which match the filter criteria you have set. Try broadening the criteria.</p>
+      <p>The criteria currently set are:</p><p>Boats
+        {
+          Object.keys(filters).map((key) => {
+            const value = filters[key];
+            if(value) {
+              switch(key) {
+                case 'name':
+                    return ' called '+value;
+                  case 'rigType':
+                    return " with a rig type of "+value;
+                  case 'sailType':
+                    return " with a sail type of "+value;
+                  case 'minYear':
+                    return " built after the start of "+value;
+                  case 'maxYear':
+                    return " built before the end of "+value;
+                  case 'constructionMaterial':
+                    return " made of "+value;
+                  case 'genericType':
+                    return " that are "+value+"s";
+                  case 'designClass':
+                    return " that are "+value+" class boats";
+                  case 'builder':
+                  return " built by "+value;
+                  case 'designer':
+                    return " designed by "+value;
+                  case 'has_images':
+                    return " with"+(value?'':'out')+" pictures";
+                  case 'for_sale':
+                    return (value?' ':' not ')+"for sale";
+                  default: return '';
+              }
+            }
+            return '';
+          })
+        }
+        .</p>
+    </Container>);
   }
   
   return data.boats.boats.map((boat) => (
