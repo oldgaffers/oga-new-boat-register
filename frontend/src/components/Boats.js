@@ -64,7 +64,7 @@ const meta = {
     designer: { name: { label: "Designer" } }
   },
   builder: { name: { label: "Builder" } },
-  prev_name: { name: { label: "Previous name(s)" } }
+  prev_name: { label: "Previous name(s)" }
 };
 
 const Boats = ({page, boatsPerPage, filters, onLoad}) => {
