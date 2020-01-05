@@ -288,6 +288,7 @@ const fieldsForFilters = {
     maxYear: "year_built",
     for_sale: "for_sale",
     designer: "designer",
+    builder: "builder",
     constructionMaterial: "construction_material",
     designClass:  "design_class",
     rigType: "rig_type",
@@ -343,11 +344,13 @@ const getBoatsJoins = (filters, fields, justCounting) => {
         }
     });
     // then the fields to be joined on to the primary fields
+    console.log('selectedOrFiltered', selectedOrFiltered);
     selectedOrFiltered.forEach(field => {
         let joiner = " LEFT JOIN";
         if(filterField.includes(field) && field != 'for_sale' && field != 'boat_image') {
             joiner = " JOIN";
         }
+        console.log(field, join_rule[field]);
         switch(join_rule[field]) {
             case 'fid':
                 if(!justCounting) {
