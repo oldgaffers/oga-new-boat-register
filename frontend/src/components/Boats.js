@@ -42,14 +42,10 @@ const query = (page, boatsPerPage, filters) => gql`{
       year_built
       home_port
       place_built
-      construction_material
       prev_name
       builder{ name }
       class{
         name
-        rigType
-        mainsailType
-        genericType
         designer{ name }
       }
     }
