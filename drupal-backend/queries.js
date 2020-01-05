@@ -314,7 +314,7 @@ const getBoatsJoins = (filters, fields, justCounting) => {
                             joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON  l_${field}.entity_id= f_${field}.field_${field}_target_id `
                             break;
                         case 'fid': // one to many
-                            console.log('not just counting and target', field);
+                            // console.log('not just counting and target', field);
                             joins += ` LEFT JOIN (
                             SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
                             FROM field_data_field_boat_image GROUP BY entity_id
@@ -447,7 +447,7 @@ const getBoats = async (db, filters) => {
     const ordering = getBoatsOrdering(filters);
     const [limits, hasNextPage, hasPreviousPage] = getBoatsLimits(filters, totalCount);
     const boatQuery = getBoatsQuery(fields, joins, wheres, ordering, limits);
-    console.log('boats', boatQuery);
+    // console.log('boats', boatQuery);
     const [boats] = await db.query(boatQuery, data);
     return { totalCount, hasNextPage, hasPreviousPage, boats };
 }
