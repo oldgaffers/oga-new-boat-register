@@ -276,13 +276,14 @@ const getBoatsJoins = (filters, fields, justCounting) => {
     if (fields) {
         Object.keys(fields).forEach(key => {
             fields[key].forEach(field => {
+                let joiner = "LEFT JOIN";
                 if (justCounting) {
                     if (filterField[field]) {
-                        let joiner = "JOIN";
                         if(field === 'for_sale') {
                             joiner = "LEFT JOIN";
+                        } else {
+                            joiner = "JOIN";
                         }
-                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
                     }
                     switch (key) {
                     case 'fid':
@@ -292,13 +293,21 @@ const getBoatsJoins = (filters, fields, justCounting) => {
                             ) image_count ON image_count.entity_id=n.nid`
                         }
                     case 'value':
+                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
+                        /*
                         if (field === 'boat_name') {
                             // name and prev_name fields are searched but prev_name is optional
                             joins += ` LEFT JOIN field_data_field_prev_name AS f_prev_name ON n.nid = f_prev_name.entity_id`;
                         }
+                        */
                         break;
-                    default: // nothing
-                    }
+                    case 'target_id':
+                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
+                        joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON l_${field}.entity_id= f_${field}.field_${field}_target_id `
+                        break;
+                    default:
+                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
+                }
                 } else {
                     let joiner = "LEFT JOIN";
                     if (filterField[field] && field !== 'for_sale') {
@@ -314,7 +323,7 @@ const getBoatsJoins = (filters, fields, justCounting) => {
                             joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON  l_${field}.entity_id= f_${field}.field_${field}_target_id `
                             break;
                         case 'fid': // one to many
-                            console.log('not just counting and target', field);
+                            // console.log('not just counting and target', field);
                             joins += ` LEFT JOIN (
                             SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
                             FROM field_data_field_boat_image GROUP BY entity_id
@@ -323,10 +332,12 @@ const getBoatsJoins = (filters, fields, justCounting) => {
                             break;
                         case 'value':
                             joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
+                            /*
                                 if (field === 'name') {
                                 // name and prev_name fields are searched but prev_name is optional
                                 joins += ` LEFT JOIN field_data_field_prev_name AS f_prev_name ON n.nid = f_prev_name.entity_id`;
                             }
+                            */
                             break;
                         default:
                             joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
@@ -458,7 +469,7 @@ const numFilteredBoats = async (db, filters) => {
     const joins = getBoatsJoins(filters, summaryFields, true);
     const { data, wheres } = builtBoatFilter(filters);
     const query = getBoatsQuery(fields, joins, wheres, '', '');
-    // console.log('num', query);
+    console.log('num', query);
     const [c] = await db.query(query, data);
     return c[0].num;
 }
