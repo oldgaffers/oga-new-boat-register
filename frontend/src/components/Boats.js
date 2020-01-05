@@ -1,13 +1,12 @@
 import React from 'react';
-import { Card, Image, Segment } from 'semantic-ui-react'
+import { Card, Image, Segment, Divider, Container } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import {A} from 'hookrouter';
+import {CardItems} from "./boat-utils";
 
 const addFilters = (filters) => {
   let r='';
   Object.keys(filters).forEach(key => {
-    console.log('addFilters', key, filters[key]);
     if(filters[key]) {
       r += `, ${key}:`
       switch(key) {
@@ -15,6 +14,8 @@ const addFilters = (filters) => {
         case 'minYear':
         case 'maxYear':
         case 'reverse':
+        case 'has_images':
+        case 'for_sale':
           r += filters[key];
           break;
         default:
@@ -37,41 +38,34 @@ const query = (page, boatsPerPage, filters) => gql`{
       oga_no
       name
       image
+      short_desc
       year_built
       home_port
       place_built
-      construction_material
       prev_name
       builder{ name }
       class{
         name
-        rigType
-        mainsailType
-        genericType
         designer{ name }
       }
     }
   }
 }`;
 
-// use this for graphQL enums
-const capitalise = (s) => {
-  if(s) {
-    return s.toLowerCase().replace(/^\w/, c => c.toUpperCase());
-  }
-  return '';
-}
+const meta = {
+  place_built: { label: "Place Built" },
+  home_port: { label: "Home Port" },
+  class: { 
+    rigType: { label: "Rig Type" },
+    designer: { name: { label: "Designer" } }
+  },
+  builder: { name: { label: "Builder" } },
+  prev_name: { label: "Previous name(s)" }
+};
 
 const Boats = ({page, boatsPerPage, filters, onLoad}) => {
 
-  // reverse meaning of sort direction if requested
-  const queryFilters = {...filters};
-  if(queryFilters.sortBy && queryFilters.sortBy.startsWith('!')) {
-    queryFilters.reverse = !queryFilters.reverse;
-    queryFilters.sortBy = queryFilters.sortBy.replace('!','');
-  }
-
-  const { loading, error, data } = useQuery(query(page, boatsPerPage, queryFilters));
+  const { loading, error, data } = useQuery(query(page, boatsPerPage, filters));
   if (error) return <p>Error :(TBD)</p>;
 
   if (loading) {
@@ -85,9 +79,51 @@ const Boats = ({page, boatsPerPage, filters, onLoad}) => {
   if(onLoad) {
     onLoad(data.boats.totalCount);
   }
+
+  if(data.boats.totalCount === 0) {
+    return (<Container><p>There are no boats which match the filter criteria you have set. Try broadening the criteria.</p>
+      <p>The criteria currently set are:</p><p>Boats
+        {
+          Object.keys(filters).map((key) => {
+            const value = filters[key];
+            if(value) {
+              switch(key) {
+                case 'name':
+                    return ' called '+value;
+                  case 'rigType':
+                    return " with a rig type of "+value;
+                  case 'sailType':
+                    return " with a sail type of "+value;
+                  case 'minYear':
+                    return " built after the start of "+value;
+                  case 'maxYear':
+                    return " built before the end of "+value;
+                  case 'constructionMaterial':
+                    return " made of "+value;
+                  case 'genericType':
+                    return " that are "+value+"s";
+                  case 'designClass':
+                    return " that are "+value+" class boats";
+                  case 'builder':
+                  return " built by "+value;
+                  case 'designer':
+                    return " designed by "+value;
+                  case 'has_images':
+                    return " with"+(value?'':'out')+" pictures";
+                  case 'for_sale':
+                    return (value?' ':' not ')+"for sale";
+                  default: return '';
+              }
+            }
+            return '';
+          })
+        }
+        .</p>
+    </Container>);
+  }
   
   return data.boats.boats.map((boat) => (
-    <Card key={boat.id}>
+    <Card key={boat.id} href={"/boats/"+boat.oga_no}>
       <Image src={boat.image} wrapped ui={false} />
       <Card.Content>
         <Card.Header>
@@ -97,27 +133,9 @@ const Boats = ({page, boatsPerPage, filters, onLoad}) => {
             <Segment>{boat.year_built}</Segment>
           </Segment.Group>
         </Card.Header>
-        <Card.Meta>
-          Rig Type <span className='rig_type'>{capitalise(boat.class.rigType)}</span>
-        </Card.Meta>
-        <Card.Meta>
-        Built <span className='place_built'>{boat.place_built}</span>
-        </Card.Meta>
-        <Card.Meta>
-        Home port <span className='home_port'>{boat.home_port}</span>
-        </Card.Meta>
-        <Card.Meta>
-        Builder <span className='builder'>{boat.builder?boat.builder.name:''}</span>
-        </Card.Meta>
-        <Card.Meta>
-          Designer <span className='designer'>{boat.class.designer?boat.class.designer.name:''}</span>
-        </Card.Meta>
-        <Card.Meta>
-          Previous Names <span className='prev_name'>{boat.prev_name}</span>
-        </Card.Meta>
-        <Card.Description>
-          <A href={"/boats/"+boat.oga_no}>View all Details</A>
-        </Card.Description>
+        <Card.Description dangerouslySetInnerHTML={{ __html: boat.short_desc }} />
+        <Divider/>
+        <CardItems labels={meta} boat={boat}/>
       </Card.Content>
     </Card>
   ));

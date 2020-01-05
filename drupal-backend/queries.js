@@ -6,8 +6,7 @@ const summaryFields = {
         "boat_oga_no", "boat_name", "prev_name",
         "year_built", "place_built", "home_port",
         "for_sale", "short_desc", "sale_text", "price"
-    ],
-    tid: ["rig_type", "generic_type", "mainsail_type", "design_class", "construction_material"]
+    ]
 }
 
 const propulsionFields = {
@@ -326,48 +325,40 @@ const getBoatsJoins = (filters, fields, justCounting) => {
     let joins = "";
     // first the primary fields
     selectedOrFiltered.forEach(field => {
-        if(justCounting) {
-            if(!onlySelected[field]) {
-                if(field == 'boat_image') {
-                    joins += `\nJOIN (
-                        SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
-                    ) image_count ON image_count.entity_id=n.nid`;
-                } else {
-                    let joiner = "LEFT JOIN";
-                    if(filterField.includes(field) && field != 'for_sale') { // special case
-                        joiner = "JOIN";
-                    }
-                    joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
-                }
-            }
+        let joiner = " LEFT JOIN";
+        if(filterField.includes(field) && field != 'for_sale' && field != 'boat_image') {
+            joiner = " JOIN";
+        }
+        if(justCounting && !onlySelected[field] && (field == 'boat_image')) {
+            joins += `${joiner} (
+                SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
+            ) image_count ON image_count.entity_id=n.nid`;
+        } else if(field == 'boat_image') {
+            joins += `${joiner} (
+                SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
+                FROM field_data_field_boat_image GROUP BY entity_id
+                ) image_count ON image_count.entity_id = n.nid`;
         } else {
-            if(field == 'boat_image') {
-                joins += `\nLEFT JOIN (
-                    SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
-                    FROM field_data_field_boat_image GROUP BY entity_id
-                    ) image_count ON image_count.entity_id = n.nid`;
-            } else {
-                joins += `\nLEFT JOIN field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
-            }
+            joins += `${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
         }
     });
     // then the fields to be joined on to the primary fields
     selectedOrFiltered.forEach(field => {
-        let joiner = "LEFT JOIN";
-        if(filterField.includes(field) && field != 'for_sale') { // special case
-            joiner = "JOIN";
+        let joiner = " LEFT JOIN";
+        if(filterField.includes(field) && field != 'for_sale' && field != 'boat_image') {
+            joiner = " JOIN";
         }
         switch(join_rule[field]) {
             case 'fid':
                 if(!justCounting) {
-                    joins += `\n${joiner} file_managed f ON f.fid=image_count.fid`;
+                    joins += `${joiner} file_managed f ON f.fid=image_count.fid`;
                 }
                 break;
             case 'target_id':
-                joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON l_${field}.entity_id = f_${field}.field_${field}_target_id `
+                joins += `${joiner} field_data_field_${field}_name AS l_${field} ON l_${field}.entity_id = f_${field}.field_${field}_target_id `
                 break;
             case 'tid':
-                joins += `\n${joiner} taxonomy_term_data AS t_${field} ON f_${field}.field_${field}_tid = t_${field}.tid`;
+                joins += `${joiner} taxonomy_term_data AS t_${field} ON f_${field}.field_${field}_tid = t_${field}.tid`;
                 break;
             default: // nothing to do
         }
@@ -483,8 +474,8 @@ const getBoats = async (db, filters) => {
     const { data, wheres } = builtBoatFilter(filters);
     const ordering = getBoatsOrdering(filters);
     const [limits, hasNextPage, hasPreviousPage] = getBoatsLimits(filters, totalCount);
-    const boatQuery = getBoatsQuery(fields, joins, wheres, ordering, limits);
-    const [boats] = await db.query(boatQuery, data);
+    const query = getBoatsQuery(fields, joins, wheres, ordering, limits);
+    const [boats] = await db.query(query, data);
     return { totalCount, hasNextPage, hasPreviousPage, boats };
 }
 

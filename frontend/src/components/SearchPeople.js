@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import _ from 'lodash'
 
-const SearchPeople = ({onChange, field, label}) => {
+const SearchPeople = ({onChange, field, label, value}) => {
 
     const [results,setResults] = useState([]);
 
@@ -21,20 +21,19 @@ const SearchPeople = ({onChange, field, label}) => {
     const handleSearchChange = (e, { value }) => {
         const re = new RegExp(value, 'i');
         const res = choices.filter(obj => Object.values(obj).some(val => val.match(re)));
-        if(res.length<32) {
-            const r = res.map(({name}) => { return {title:name}});
-            setResults(r);
-        }
+        setResults(res.map(({name}) => { return {title:name}}));
     };
 
     return (
         <Form.Field><label>{label}</label>
         <Search
         onResultSelect={handleResultSelect}
+        minCharacters={3}
         onSearchChange={_.debounce(handleSearchChange, 500, {
         leading: true,
         })}
         results={results}
+        defaultValue={value?value:''}
         />
         </Form.Field>
     );

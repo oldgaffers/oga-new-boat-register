@@ -5,20 +5,20 @@ import { useQuery } from '@apollo/react-hooks';
 import SearchPeople from './SearchPeople'
 import SearchBoatNames from './SearchBoatNames';
 
-// Set the 'do not filter' option - the other values will be filled from the database
-const rigTypeOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
-const mainSailOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
-const genericTypeOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
-const designClassOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
-const materialOptions = [{ key: '', text: '- Any -', value: '- Any -' }];
+const ANY = '- Any -';
 
-// prefix the value with ! to flip the meaning of reverse
-// (this is processed in Boats.js)
+// Set the 'do not filter' option - the other values will be filled from the database
+const rigTypeOptions = [{ key: '', text: ANY, value: ANY }];
+const mainSailOptions = [{ key: '', text: ANY, value: ANY }];
+const genericTypeOptions = [{ key: '', text: ANY, value: ANY }];
+const designClassOptions = [{ key: '', text: ANY, value: ANY }];
+const materialOptions = [{ key: '', text: ANY, value: ANY }];
+
 const sortOptions = [
     { key: 'name', text: 'Boat Name', value: 'name' },
     { key: 'oga_no', text: 'OGA Boat No.', value: 'oga_no' },
     { key: 'built', text: 'Year Built', value: 'built' },
-    { key: 'updated', text: 'Last Updated', value: '!updated' }
+    { key: 'updated', text: 'Last Updated', value: 'updated' }
 ];
 
 const pageOptions = [];
@@ -26,9 +26,9 @@ for (let i = 6; i <= 48; i += 6) {
     pageOptions.push({ key: i, text: `${i}`, value: i });
 };
 
-const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
-
-    const [filters, setFilters] = useState({});
+const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filters}) => {
+    
+    const [reverse, setReverse] = useState(false);
 
     const { loading, error, data } = useQuery(gql(`{picLists{
         rigTypes
@@ -48,76 +48,114 @@ const SearchAndFilterBoats = ({onReset, onSearch, onUpdate, onPageSize}) => {
         data.picLists.constructionMaterials.forEach(v => materialOptions.push({ key: v, text: v, value: v }));
     }
 
-    const searchClicked = (e) => {
-        if(onSearch) onSearch(filters);
-    }
-
-    const resetClicked = () => {
-        setFilters({});
-        if(onReset) onReset();
-    }
-
     const pageSizeChanged = (size) => {
         if(onPageSize) onPageSize(size);
     }
 
     const filterChanged = (field,value) => {
+
         let newFilters = {...filters};
-        if(value === '- Any -') {
-            delete newFilters[field];
+
+        console.log('filterChanged',field, value, reverse);
+        if(field === 'sortBy') {
+            // also set sort direction
+            newFilters.reverse = (value === 'updated')?(!reverse):reverse;
+        }
+        console.log('filterChanged to',newFilters);
+
+        if(field === 'reverse') {
+            setReverse(value);
+        }
+
+        if(value === ANY) {
+            newFilters[field] = null;
         } else {
             newFilters[field] = value;
         }
         if(onUpdate) onUpdate(newFilters);
-        setFilters(newFilters);
     }
 
+    console.log('filters', filters);
+
     return (
-        <Form onSubmit={searchClicked}>
+        <Form>
             <Form.Group inline>
-                <SearchBoatNames onChange={value=>filterChanged('name',value)} label='Boat Name (incl. previous names)'/>
-                <Form.Input onChange={(_,{value})=>filterChanged('oga_no',value)} size='mini' label='OGA Boat No.' type='text' />
-                <Form.Field>
-                    <label>Rig Type</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('rigType',value)} defaultValue={rigTypeOptions[0].value} selection options={rigTypeOptions} />
-                </Form.Field>
-                <Form.Field>
-                    <label>Mainsail Type</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('sailType',value)} defaultValue={mainSailOptions[0].value} selection options={mainSailOptions} />
-                </Form.Field>
+                <SearchBoatNames onChange={value=>filterChanged('name',value)}
+                    label='Boat Name (incl. previous names)'
+                    value={filters.name?filters.name:''}
+                />
+                <Form.Input size='mini' label='OGA Boat No.' type='text'
+                    onChange={(_,{value})=>filterChanged('oga_no',value)} 
+                    value={filters.oga_no?filters.oga_no:''}
+                />
+                <SearchPeople field='designers' onChange={value=>filterChanged('designer',value)} 
+                    label='Designers Name' value={filters.designer}
+                />
+                <SearchPeople field='builders' onChange={value=>filterChanged('builder',value)}
+                    label='Builders Name' value={filters.builder}
+                />
                 <Form.Group inline>
                     <label>Year Built</label>
-                    <Form.Input onChange={(_,{value})=>filterChanged('minYear',value)} defaultValue='1850' label='between' type='text' />
-                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear',value)} defaultValue='2020' label='and' type='text' />
+                    <Form.Input onChange={(_,{value})=>filterChanged('minYear',value)} value={filters.minYear} label='between' type='text' />
+                    <Form.Input onChange={(_,{value})=>filterChanged('maxYear',value)} value={filters.maxYear} label='and' type='text' />
                 </Form.Group>
             </Form.Group>
             <Form.Group inline>
-                <SearchPeople onChange={value=>filterChanged('designer',value)} label='Designers Name' field='designers'/>
-                <SearchPeople onChange={value=>filterChanged('builder',value)} label='Builders Name' field='builders'/>
+            <Form.Field>
+                    <label>Rig Type</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('rigType',value)} 
+                        value={filters.rigType?filters.rigType:ANY}
+                        selection options={rigTypeOptions}
+                    />
+                </Form.Field>
+                <Form.Field>
+                    <label>Mainsail Type</label>
+                    <Dropdown onChange={(_,{value})=>filterChanged('sailType',value)}
+                        value={filters.sailType?filters.sailType:ANY}
+                        selection options={mainSailOptions}
+                    />
+                </Form.Field>
                 <Form.Field>
                     <label>Design Class</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('designClass',value)} defaultValue={designClassOptions[0].value} selection options={designClassOptions} />
+                    <Dropdown search selection
+                        onChange={(_,{value})=>filterChanged('designClass',value)} 
+                        value={filters.designClass?filters.designClass:ANY} 
+                        options={designClassOptions} />
                 </Form.Field>
                 <Form.Field>
                     <label>Generic Type</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('genericType',value)} defaultValue={genericTypeOptions[0].value} selection options={genericTypeOptions} />
+                    <Dropdown selection onChange={(_,{value})=>filterChanged('genericType',value)}
+                        value={filters.genericType?filters.genericType:ANY}  
+                        options={genericTypeOptions}
+                    />
                 </Form.Field>
                 <Form.Field>
                     <label>Construction material</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('constructionMaterial',value)} defaultValue={materialOptions[0].value} selection options={materialOptions} />
+                    <Dropdown selection onChange={(_,{value})=>filterChanged('constructionMaterial',value)}
+                        value={filters.constructionMaterial?filters.constructionMaterial:ANY}
+                        options={materialOptions}
+                    />
                 </Form.Field>
+            </Form.Group>
+            <Form.Group inline>
+                <Form.Radio onChange={(_,{checked})=>filterChanged('has_images',checked?null:true)} toggle label='include boats without pictures' />
+                <Form.Radio onChange={(_,{checked})=>filterChanged('for_sale',checked)} toggle label='only boats for sale' />
             </Form.Group>
             <Form.Group inline>
                 <Form.Field>
                     <label>Sort By</label>
-                    <Dropdown onChange={(_,{value})=>filterChanged('sortBy',value)} defaultValue={sortOptions[0].value} selection options={sortOptions} />
+                    <Dropdown selection onChange={(_,{value})=>filterChanged('sortBy',value)}
+                        value={filters.sortBy} options={sortOptions}
+                    />
                 </Form.Field>
                 <Form.Radio onChange={(_,{checked})=>filterChanged('reverse',checked)} toggle label='reversed' />
                 <Form.Field>
                     <label>Boats Per Page</label>
-                    <Dropdown onChange={(_,{value})=>pageSizeChanged(value)} defaultValue={pageOptions[1].value} selection options={pageOptions} />
+                    <Dropdown selection onChange={(_,{value})=>pageSizeChanged(value)}
+                        value={boatsPerPage}
+                        options={pageOptions} />
                 </Form.Field>
-                <Button onClick={resetClicked} type='reset'>Reset</Button>
+                <Button onClick={()=>{if(onReset) onReset()}} type='reset'>Reset</Button>
             </Form.Group>
         </Form>
     )

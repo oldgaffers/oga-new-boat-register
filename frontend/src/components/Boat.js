@@ -1,94 +1,26 @@
-import React from 'react';
-import { Container, Grid, Header, Image, List, Tab } from 'semantic-ui-react';
+import React, { useEffect } from 'react';
+import { Responsive, Container, Grid, Header, List, Tab, ListItem } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import TopMenu from './TopMenu';
+import Friendly from './Friendly.js';
 import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
-
-const ImageList = ({images}) => {
-    if(images) {
-        return images.map((image, i) =>(<Image key={i} src={image.uri} />   ));
-    }
-    return [];
-}
-
-const RegistrationAndLocation = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Previous name/s' content={boat.prev_name} />
-                <List.Item header='Place built' content={boat.place_built} />
-                <List.Item header='Approximate Year of Build' content={boat.year} />
-                <List.Item header='Sail no.' content={boat.sail_no} />
-                <List.Item header='Home country' content={boat.home_country} />
-                <List.Item header='Small Ships Registry no. (SSR)' content={boat.ssr_no} />
-                <List.Item header='National Register of Historic Vessels no. (NRHV)' content={boat.nhsr_no} />
-        </List>
-        </Tab.Pane>
-    );
-}
-
-const Construction = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Construction method' content={boat.construction_method} />
-                <List.Item header='Construction material' content={boat.construction_material} />
-                <List.Item header='Hull Type' content={boat.class.hullType} />
-                <List.Item header='Generic Type' content={boat.class.genericType} />
-                <List.Item header='Builder' content={boat.builder.name} />
-        </List>
-        </Tab.Pane>
-    );
-}
-
-const Hull = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Length on deck (LOD):' content={boat.length_overall+' ft'} />
-                <List.Item header='Length on waterline (LWL):' content={boat.length_on_waterline+' ft'} />
-                <List.Item header='Beam:' content={boat.beam+' ft'} />
-                <List.Item header='Draft:' content={boat.draft+' ft'} />
-            </List>
-        </Tab.Pane>
-    );
-}
-
-const Engine = ({boat}) => {
-    return (
-        <Tab.Pane>
-            <List>
-                <List.Item header='Engine make:' content={boat.engine_make} />
-                <List.Item header='Engine power:' content={boat.engine_power} />
-                <List.Item header='Engine date:' content={boat.engine_date} />
-                <List.Item header='Engine fuel:' content={boat.engine_fuel} />
-                <List.Item header='Previous engine(s):' content={boat.previous_engine} />
-                <List.Item header='Propeller blades:' content={boat.propellor_blades} />
-                <List.Item header='Propeller type:' content={boat.propellor_type} />
-                <List.Item header='Propeller position:' content={boat.propellor_position} />
-            </List>
-        </Tab.Pane>
-    );
-}
+import ListItems from "./boat-utils";
 
 const boatQuery = (id) => gql`{
     boat(id:${id}) {
-        name
-        prev_name
-        year
-        sail_no
-        place_built
-        home_country
-        home_port
-        ssr_no
-        nhsr_no
-        short_desc
-        full_desc
+        name prev_name
+        year approximate_year_of_build
+        place_built home_country home_port
+        sail_no ssr_no nhsr_no fishing_no call_sign
+        other_registries nsbr_no off_reg_no port_reg
+        short_desc full_desc
+        for_sale sale_text price
         images{
             uri
             copyright
+            height width title alt
         }
         class{
             name
@@ -104,65 +36,147 @@ const boatQuery = (id) => gql`{
         draft
         length_on_waterline
         length_overall
-        propellor_type
-        propellor_position
-        propellor_blades
-        engine_fuel
-        engine_position
-        engine_date
-        engine_make
-        engine_power
-        hp
-        previous_engine
+        propulsion{
+            propellor_type
+            propellor_position
+            propellor_blades
+            engine_fuel
+            engine_position
+            engine_date
+            engine_make
+            engine_power
+            hp
+            previous_engine
+        }
     }
   }`;
 
-const Boat = ({id}) => {
+const registration = {
+    prev_name: { label: 'Previous name/s' },
+    place_built: { label: 'Place built' },
+    year: { label: 'Year of Build' },
+    approximate_year_of_build: { label: 'Approximate Year of Build' },
+    sail_no: { label: 'Sail No.' },
+    home_country: { label: 'Home Country' },
+    ssr_no: { label: 'Small Ships Registry no. (SSR)' },
+    nhsr_no: { label: 'National Register of Historic Vessels no. (NRHV)' },
+    fishing_no: { label: 'Fishing No.' },
+    call_sign: { label: 'Call Sign' },
+    other_registries: { label: 'Other Registrations' },
+    nsbr_no: { label: 'National Small Boat Register' },
+    off_reg_no: { label: 'Official Registration' },
+    port_reg: { label: 'Port of Registry' }
+};
+
+const construction = {
+    construction_method: { label: 'Construction method' },
+    construction_material: { label: 'Construction material' },
+    class: {
+        hullType: { label: 'Hull Type' },
+        genericType: { label: 'Generic Type ' },
+    },
+    builder: { name: { label: 'Builder' } }
+};
+
+const hull = {
+    length_overall: { label: 'Length on deck (LOD):', unit: 'ft' },
+    length_on_waterline: { label: 'Length on waterline (LWL):', unit: 'ft' },
+    beam: { label: 'Beam', unit: 'ft' },
+    draft: { label: 'Draft', unit: 'ft' }
+};
+
+const engine = {
+    engine_make: { label: 'Engine make:' },
+    engine_power: { label: 'Engine power:' },
+    engine_date: { label: 'Engine date:' },
+    engine_fuel: { label: 'Engine fuel:' },
+    previous_engine: { label: 'Previous engine(s):' },
+    propellor_blades: { label: 'Propeller blades:' },
+    propellor_type: { label: 'Propeller type:' },
+    propellor_position: { label: 'Propeller position:' }
+};
+
+const Boat = ({ id }) => {
 
     const { loading, error, data } = useQuery(boatQuery(id));
+
+    useEffect(() => {
+        if (data) {
+            document.title = data.boat.name;
+        }
+    });
+
+    const rigItems = RigAndSails({ id }); // uses hooks so must be unconditional
+
     if (loading) return <p>Loading...</p>
     if (error) return <p>Error :(TBD)</p>;
     const boat = data.boat;
 
     const panes = [
-        { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{__html: boat.full_desc}}/>},
-        { menuItem: 'Registration and location', render: () => <RegistrationAndLocation boat={boat}/> },
-        { menuItem: 'Rig and Sails', render: () => <RigAndSails id={id}/> },
-        { menuItem: 'Construction', render: () => <Construction boat={boat}/> },
-        { menuItem: 'Hull', render: () => <Hull boat={boat}/> },
-        { menuItem: 'Engine', render: () => <Engine boat={boat}/> },
-      ];    
+        { menuItem: 'Registration and location', render: () => <Tab.Pane><List><ListItems labels={registration} boat={boat} /></List></Tab.Pane> },
+        { menuItem: 'Construction', render: () => <Tab.Pane><List><ListItems labels={construction} boat={boat} /></List></Tab.Pane> },
+        { menuItem: 'Hull', render: () => <Tab.Pane><List><ListItems labels={hull} boat={boat} /></List></Tab.Pane> },
+    ];
+    if (rigItems.length > 0) {
+        panes.push({ menuItem: 'Rig and Sails', render: () => <Tab.Pane><List>{rigItems}</List></Tab.Pane> });
+    }
+    const engineItems = ListItems({ labels: engine, boat: boat.propulsion });
+    if (engineItems.length > 0) {
+        panes.push({ menuItem: 'Engine', render: () => <Tab.Pane><List>{engineItems}</List></Tab.Pane> });
+    }
+
+    if (boat.full_desc) {
+        panes.unshift(
+            { menuItem: 'Full Description', render: () => <Tab.Pane dangerouslySetInnerHTML={{ __html: boat.full_desc }} /> },
+        );
+    }
+
+    if (boat.for_sale) {
+        let text = boat.sale_text;
+        if (boat.price) {
+            text += "<b>Price: </b>" + boat.price;
+        }
+        panes.unshift({
+            menuItem: 'For Sale', render: () => <Tab.Pane dangerouslySetInnerHTML={{ __html: text }} />
+        });
+    }
 
     return (
-        <Container>
-            <TopMenu/>
-            <Grid columns={2} divided>
-                <Grid.Row>
-                    <Grid.Column width={10}>
-                        <Header as="h1">{boat.name}</Header>
-                    </Grid.Column>
-                    <Grid.Column width={1}>
-                        <Header as="h1">{boat.year}</Header>
-                    </Grid.Column>
-                </Grid.Row>
-                <Grid.Row>
-                    <Grid.Column width={10}>
-                     <ImageCarousel images={boat.images}/>
-                    </Grid.Column>
-                    <Grid.Column width={3}>
-                        <Header as="h2">Details</Header>
-                        <List>
-                            <List.Item header='Boat OGA no:' content={id}/>
-                            <List.Item header='Mainsail type:' content={boat.class.mainsailType}/>
-                            <List.Item header='Rig type:' content={boat.class.rigType}/>
-                            <List.Item header='Home port or other location:' content={boat.home_port}/>
-                        </List> 
-                    </Grid.Column>
-                </Grid.Row>
-            </Grid>
-            <Image.Group size='tiny'><ImageList images={boat.images}/></Image.Group>
-            <Tab panes={panes}/>
-        </Container>
+        <Responsive>
+            <TopMenu />
+            <Container>
+                <Grid columns={2} divided>
+                    <Grid.Row>
+                        <Grid.Column width={10}>
+                            <Header as="h1">{boat.name}</Header>
+                        </Grid.Column>
+                        <Grid.Column width={1}>
+                            <Header as="h1">{boat.year}</Header>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row>
+                        <Grid.Column width={13}>
+                            <ImageCarousel images={boat.images} />
+                        </Grid.Column>
+                        <Grid.Column width={3}>
+                            <Header as="h2">Details</Header>
+                            <List>
+                                <List.Item header='Boat OGA no:' content={id} />
+                                <List.Item header='Mainsail type:' content={boat.class.mainsailType} />
+                                <List.Item header='Rig type:' content={boat.class.rigType} />
+                                <List.Item header='Home port or other location:' content={boat.home_port} />
+                                <ListItem><div dangerouslySetInnerHTML={{ __html: boat.short_desc }}></div></ListItem>
+                            </List>
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row width={16}>
+                        <Tab panes={panes} />
+                    </Grid.Row>
+                </Grid>
+            </Container>
+            <Friendly />
+        </Responsive>
+
     );
 };
 
