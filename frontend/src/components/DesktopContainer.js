@@ -9,7 +9,9 @@ import Hero from "./Hero"
 import TopMenu from "./TopMenu"
 
 function imageBackground() {
-    const url = 'https://www.oga.org.uk/sites/default/files/boat_images/Rocket-DD CNV00018.JPG';
+    const url = 'https://oga.org.uk/sites/default/files/boat_images/alando_0.jpg'
+    //const url = 'https://www.oga.org.uk/sites/default/files/boat_images/OGA%204%20%20Wendy%20May%20Dick%20Durham%20BOB_1056.jpg';
+    // const url = 'https://www.oga.org.uk/sites/default/files/boat_images/Rocket-DD CNV00018.JPG';
     const Background = {
       backgroundImage: "url('" + url + "')",
       backgroundSize: '800px'

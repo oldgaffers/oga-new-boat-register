@@ -25,15 +25,9 @@ const Hero = ({ mobile }) => {
           marginTop: mobile ? '1.5em' : '3em',
         }}
       />
-      <Header
-        as='h2'
+      <Container
         content='A home for traditionally rigged yachts and working craft.'
-        inverted
-        style={{
-          fontSize: mobile ? '1.5em' : '1.7em',
-          fontWeight: 'normal',
-          marginTop: mobile ? '0.5em' : '1.5em',
-        }}
+        className='Br-hero-sub'
       />
       <Button primary size='huge'>
         <A href="/browse"><span style={{color: 'white'}}>Let's Look at some boats ...</span>
