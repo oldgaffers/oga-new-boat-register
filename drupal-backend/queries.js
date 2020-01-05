@@ -327,7 +327,11 @@ const getBoatsJoins = (filters, fields, justCounting) => {
     // first the primary fields
     selectedOrFiltered.forEach(field => {
         let joiner = " LEFT JOIN";
-        if(filterField.includes(field) && field != 'for_sale' && field != 'boat_image') {
+        if(filterField.includes(field) 
+            && field != 'for_sale' 
+            && field != 'boat_image'
+            && field != 'prev_name'
+            ) {
             joiner = " JOIN";
         }
         if(justCounting && !onlySelected[field] && (field == 'boat_image')) {
@@ -344,13 +348,11 @@ const getBoatsJoins = (filters, fields, justCounting) => {
         }
     });
     // then the fields to be joined on to the primary fields
-    console.log('selectedOrFiltered', selectedOrFiltered);
     selectedOrFiltered.forEach(field => {
         let joiner = " LEFT JOIN";
         if(filterField.includes(field) && field != 'for_sale' && field != 'boat_image') {
             joiner = " JOIN";
         }
-        console.log(field, join_rule[field]);
         switch(join_rule[field]) {
             case 'fid':
                 if(!justCounting) {
