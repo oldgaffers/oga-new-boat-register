@@ -344,13 +344,11 @@ const getBoatsJoins = (filters, fields, justCounting) => {
         }
     });
     // then the fields to be joined on to the primary fields
-    console.log('selectedOrFiltered', selectedOrFiltered);
     selectedOrFiltered.forEach(field => {
         let joiner = " LEFT JOIN";
         if(filterField.includes(field) && field != 'for_sale' && field != 'boat_image') {
             joiner = " JOIN";
         }
-        console.log(field, join_rule[field]);
         switch(join_rule[field]) {
             case 'fid':
                 if(!justCounting) {
@@ -486,6 +484,7 @@ const numFilteredBoats = async (db, filters) => {
     const fields = "count(*) as num";
     const joins = getBoatsJoins(filters, summaryFields, true);
     const { data, wheres } = builtBoatFilter(filters);
+    console.log(query);
     const query = getBoatsQuery(fields, joins, wheres, '', '');
     const [c] = await db.query(query, data);
     return c[0].num;
