@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Button, Dropdown, Form } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import SearchPeople from './SearchPeople'
-import SearchBoatNames from './SearchBoatNames';
+import SearchPeopleAndBoats from './SearchPeopleAndBoats'
 
 const ANY = '- Any -';
 
@@ -26,9 +25,62 @@ for (let i = 6; i <= 48; i += 6) {
     pageOptions.push({ key: i, text: `${i}`, value: i });
 };
 
+const SearchBoatNames = ({onChange, onSearchChange, value}) => {
+
+    const { loading, error, data } = useQuery(gql`{boatNames}`);
+
+    if (loading) return <p>Loading...</p>
+    if (error) return <p>Error :(TBD)</p>;
+
+    const choices = data.boatNames.map(name => { return {name:name}});
+
+    return (<SearchPeopleAndBoats
+        onResultSelect={onChange}
+        onSearchChange={onSearchChange}
+        choices={choices}
+        label="Boat Name (incl. previous names)"
+        value={value}
+    />);
+}
+
+const SearchBuilders = ({onChange, onSearchChange, value}) => {
+
+    const { loading, error, data } = useQuery(gql`{builders{id name}}`);
+
+    if (loading) return <p>Loading...</p>
+    if (error) return <p>Error :(TBD)</p>;
+
+    return (<SearchPeopleAndBoats 
+        onResultSelect={onChange}
+        onSearchChange={onSearchChange}
+        choices={data.builders}
+        label="Builders Name"
+        value={value}
+    />);
+}
+
+const SearchDesigners = ({onChange, onSearchChange, value}) => {
+
+    const { loading, error, data } = useQuery(gql`{designers{id name}}`);
+
+    if (loading) return <p>Loading...</p>
+    if (error) return <p>Error :(TBD)</p>;
+
+    return (<SearchPeopleAndBoats 
+        onResultSelect={onChange}
+        onSearchChange={onSearchChange}
+        choices={data.designers}
+        label="Designers Name"
+        value={value}
+    />);
+}
+
 const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filters}) => {
     
     const [reverse, setReverse] = useState(false);
+    const [builder, setBuilder] = useState('');
+    const [designer, setDesigner] = useState('');
+    const [boatName, setBoatName] = useState('');
 
     const { loading, error, data } = useQuery(gql(`{picLists{
         rigTypes
@@ -52,6 +104,13 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
         if(onPageSize) onPageSize(size);
     }
 
+    const handleReset = () => {
+        if(onReset) onReset();
+        setBuilder('');
+        setDesigner('')
+        setBoatName('');
+    }
+
     const filterChanged = (field,value) => {
 
         let newFilters = {...filters};
@@ -67,6 +126,18 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
             setReverse(value);
         }
 
+        if(field === 'builder') {
+            setBuilder(value);
+        }
+
+        if(field === 'designer') {
+            setDesigner(value);
+        }
+
+        if(field === 'name') {
+            setBoatName(value);
+        }
+
         if(value === ANY) {
             newFilters[field] = null;
         } else {
@@ -80,19 +151,24 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
     return (
         <Form>
             <Form.Group inline>
-                <SearchBoatNames onChange={value=>filterChanged('name',value)}
-                    label='Boat Name (incl. previous names)'
-                    value={filters.name?filters.name:''}
+                <SearchBoatNames 
+                    onChange={value=>filterChanged('name',value)}
+                    onSearchChange={(value) => setBoatName(value)}
+                    value={boatName}
                 />
                 <Form.Input size='mini' label='OGA Boat No.' type='text'
                     onChange={(_,{value})=>filterChanged('oga_no',value)} 
                     value={filters.oga_no?filters.oga_no:''}
                 />
-                <SearchPeople field='designers' onChange={value=>filterChanged('designer',value)} 
-                    label='Designers Name' value={filters.designer}
+                <SearchDesigners 
+                    onChange={value=>filterChanged('designer',value)} 
+                    onSearchChange={(value) => setDesigner(value)}
+                    value={designer}
                 />
-                <SearchPeople field='builders' onChange={value=>filterChanged('builder',value)}
-                    label='Builders Name' value={filters.builder}
+                <SearchBuilders
+                    onChange={value=>filterChanged('builder',value)}
+                    onSearchChange={(value) => setBuilder(value)}
+                    value={builder}
                 />
                 <Form.Group inline>
                     <label>Year Built</label>
@@ -155,7 +231,7 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
                         value={boatsPerPage}
                         options={pageOptions} />
                 </Form.Field>
-                <Button onClick={()=>{if(onReset) onReset()}} type='reset'>Reset</Button>
+                <Button onClick={()=>handleReset()} type='reset'>Reset</Button>
             </Form.Group>
         </Form>
     )
