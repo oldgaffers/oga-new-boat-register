@@ -259,93 +259,119 @@ TODO
   we want a LEFT JOIN for prev_name if name is present
   */
 
+const join_rule = {
+    "builder":"target_id", 
+    "designer":"target_id",
+    "boat_image":"fid",
+    "boat_oga_no": "value",
+    "boat_name": "value",
+    "prev_name": "value",
+    "year_built": "value",
+    "place_built": "value",
+    "home_port": "value",
+    "for_sale": "value",
+    "short_desc": "value",
+    "sale_text": "value",
+    "price": "value",
+    "rig_type": "tid",
+    "generic_type": "tid", 
+    "mainsail_type": "tid", 
+    "design_class": "tid", 
+    "construction_material": "tid"
+}
+
+const fieldsForFilters = {
+    has_images: "boat_image",
+    name: "boat_name",
+    oga_no: "boat_oga_no",
+    year_built: "year_built",
+    minYear: "year_built",
+    maxYear: "year_built",
+    for_sale: "for_sale",
+    designer: "designer",
+    constructionMaterial: "construction_material",
+    designClass:  "design_class",
+    rigType: "rig_type",
+    sailType: "mainsail_type",
+    genericType: "generic_type"
+}
+
 const getBoatsJoins = (filters, fields, justCounting) => {
-    // collect the fields filters will use - this is a bit indirect :(
-    let filterField = {};
+    // collect the fields filters will use
+    let filterField = [];
     if (filters) {
-        Object.keys(fieldMappings).forEach(key => {
-            Object.keys(fieldMappings[key]).forEach(filter => {
-                if(filters[filter]) {
-                    const field = fieldMappings[key][filter].field
-                    filterField[field] = true;
-                }
-            });
+        Object.keys(filters).forEach(key => {
+            const field = fieldsForFilters[key];
+            if(field && !filterField.includes(field)) filterField.push(field);
         });
+        if(filterField.includes('boat_name')) filterField.push('prev_name');
     }
+    // collect the fields will return as values
+    let selectedField = [];
+    if (!justCounting) {
+        if (fields) {
+            Object.keys(fields).forEach(key => {
+                selectedField = selectedField.concat(fields[key]);
+            });
+        }
+    }
+    // make an array of the difference
+    onlySelected = [];
+    selectedField.forEach(field => {
+        if(!filterField.includes(field)) onlySelected.push(field);
+    });
+    // make the concat
+    let selectedOrFiltered = onlySelected.concat(filterField);
+    // now create the joins
     let joins = "";
-    if (fields) {
-        Object.keys(fields).forEach(key => {
-            fields[key].forEach(field => {
-                let joiner = "LEFT JOIN";
-                if (justCounting) {
-                    if (filterField[field]) {
-                        if(field === 'for_sale') {
-                            joiner = "LEFT JOIN";
-                        } else {
-                            joiner = "JOIN";
-                        }
-                    }
-                    switch (key) {
-                    case 'fid':
-                        if (field === 'boat_image' && (filters.has_images || filters.has_images === false)) {
-                            joins += ` LEFT JOIN (
-                                SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
-                            ) image_count ON image_count.entity_id=n.nid`
-                        }
-                    case 'value':
-                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
-                        /*
-                        if (field === 'boat_name') {
-                            // name and prev_name fields are searched but prev_name is optional
-                            joins += ` LEFT JOIN field_data_field_prev_name AS f_prev_name ON n.nid = f_prev_name.entity_id`;
-                        }
-                        */
-                        break;
-                    case 'target_id':
-                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
-                        joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON l_${field}.entity_id= f_${field}.field_${field}_target_id `
-                        break;
-                    default:
-                        joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
-                }
+    // first the primary fields
+    selectedOrFiltered.forEach(field => {
+        if(justCounting) {
+            if(!onlySelected[field]) {
+                if(field == 'boat_image') {
+                    joins += `\nJOIN (
+                        SELECT entity_id, count(*) as num FROM field_data_field_${field} GROUP BY entity_id
+                    ) image_count ON image_count.entity_id=n.nid`;
                 } else {
                     let joiner = "LEFT JOIN";
-                    if (filterField[field] && field !== 'for_sale') {
+                    if(filterField.includes(field) && field != 'for_sale') { // special case
                         joiner = "JOIN";
                     }
-                    switch (key) {
-                        case 'tid':
-                            joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
-                            joins += ` ${joiner} taxonomy_term_data AS t_${field} ON f_${field}.field_${field}_tid = t_${field}.tid`;
-                            break;
-                        case 'target_id': // in theory one to many but not in practice
-                            joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
-                            joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON  l_${field}.entity_id= f_${field}.field_${field}_target_id `
-                            break;
-                        case 'fid': // one to many
-                            // console.log('not just counting and target', field);
-                            joins += ` LEFT JOIN (
-                            SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
-                            FROM field_data_field_boat_image GROUP BY entity_id
-                            ) image_count ON image_count.entity_id = n.nid
-                            LEFT JOIN file_managed f ON f.fid=image_count.fid`;
-                            break;
-                        case 'value':
-                            joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
-                            /*
-                                if (field === 'name') {
-                                // name and prev_name fields are searched but prev_name is optional
-                                joins += ` LEFT JOIN field_data_field_prev_name AS f_prev_name ON n.nid = f_prev_name.entity_id`;
-                            }
-                            */
-                            break;
-                        default:
-                            joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid `
-                    }
+                    joins += `\n${joiner} field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
                 }
-            });
-        });
-    }
+            }
+        } else {
+            if(field == 'boat_image') {
+                joins += `\nLEFT JOIN (
+                    SELECT entity_id, max(field_boat_image_fid) AS fid, max(rand()), count(*) as num
+                    FROM field_data_field_boat_image GROUP BY entity_id
+                    ) image_count ON image_count.entity_id = n.nid`;
+            } else {
+                joins += `\nLEFT JOIN field_data_field_${field} AS f_${field} ON f_${field}.entity_id = n.nid`
+            }
+        }
+    });
+    // then the fields to be joined on to the primary fields
+    selectedOrFiltered.forEach(field => {
+        let joiner = "LEFT JOIN";
+        if(filterField.includes(field) && field != 'for_sale') { // special case
+            joiner = "JOIN";
+        }
+        switch(join_rule[field]) {
+            case 'fid':
+                if(!justCounting) {
+                    joins += `\n${joiner} file_managed f ON f.fid=image_count.fid`;
+                }
+                break;
+            case 'target_id':
+                joins += `\n${joiner} field_data_field_${field}_name AS l_${field} ON l_${field}.entity_id = f_${field}.field_${field}_target_id `
+                break;
+            case 'tid':
+                joins += `\n${joiner} taxonomy_term_data AS t_${field} ON f_${field}.field_${field}_tid = t_${field}.tid`;
+                break;
+            default: // nothing to do
+        }
+    });
     return joins;
 }
 
@@ -458,18 +484,15 @@ const getBoats = async (db, filters) => {
     const ordering = getBoatsOrdering(filters);
     const [limits, hasNextPage, hasPreviousPage] = getBoatsLimits(filters, totalCount);
     const boatQuery = getBoatsQuery(fields, joins, wheres, ordering, limits);
-    console.log('boats', boatQuery);
     const [boats] = await db.query(boatQuery, data);
     return { totalCount, hasNextPage, hasPreviousPage, boats };
 }
 
 const numFilteredBoats = async (db, filters) => {
-    console.log('numFilteredBoats', filters);
     const fields = "count(*) as num";
     const joins = getBoatsJoins(filters, summaryFields, true);
     const { data, wheres } = builtBoatFilter(filters);
     const query = getBoatsQuery(fields, joins, wheres, '', '');
-    console.log('num', query);
     const [c] = await db.query(query, data);
     return c[0].num;
 }
