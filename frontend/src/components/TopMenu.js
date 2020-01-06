@@ -28,6 +28,7 @@ const TopMenu = ({fixed}) => {
                 <Button as='a' inverted={!fixed}>
                     Log in
                 </Button>
+                <div class="g-signin2" data-onsuccess="onSignIn"></div>
                 <Button as='a' inverted={!fixed} primary={fixed} style={{ marginLeft: '0.5em' }}>
                     Sign Up
                 </Button>
