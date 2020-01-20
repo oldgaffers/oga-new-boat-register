@@ -7,8 +7,10 @@ import {
   Menu,
   Segment,
 } from 'semantic-ui-react'
+import { useAuth0 } from "../react-auth0-spa";
 
 const TopMenu = ({fixed}) => {
+    const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
     return (
         <Segment inverted>
             <Menu
@@ -25,9 +27,19 @@ const TopMenu = ({fixed}) => {
                 <Menu.Item as='a'>For Sale</Menu.Item>
                 <Menu.Item as='a'>Join In</Menu.Item>
                 <Menu.Item position='right'>
-                <Button as='a' inverted={!fixed}>
+                {!isAuthenticated && (
+                <Button
+                    as='button'
+                    onClick={() => loginWithRedirect({})}
+                    inverted={!fixed}
+                >
                     Log in
                 </Button>
+                )}
+                {isAuthenticated && 
+                    <Button as='button' inverted={!fixed} onClick={() => logout()}>
+                        Log out {user.given_name}
+                    </Button>}
                 <Button as='a' inverted={!fixed} primary={fixed} style={{ marginLeft: '0.5em' }}>
                     Sign Up
                 </Button>
