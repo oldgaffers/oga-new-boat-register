@@ -104,3 +104,4 @@ dist
 .tern-port
 # database parameters
 backend.sh
+.DS_Store
