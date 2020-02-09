@@ -1,7 +1,7 @@
 const axios = require('axios')
 const fs = require('fs')
 
-const api_key = fs.readFileSync('../jot_api_key.txt')
+const api_key = fs.readFileSync('jot_api_key.txt')
 
 function compare(a, b) {
     return a.toLowerCase().localeCompare(b.toLowerCase());
