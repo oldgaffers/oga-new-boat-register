@@ -7,6 +7,7 @@ import Friendly from './Friendly.js';
 import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
 import ListItems from "./boat-utils";
+import SmugMugGallery from './SmugMugGallery';
 
 const boatQuery = (id) => gql`{
     boat(id:${id}) {
@@ -156,7 +157,7 @@ const Boat = ({ id }) => {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={13}>
-                            <div dangerouslySetInnerHTML={{ __html: '<iframe src="https://juliancable.smugmug.com/frame/slideshow?key=smhdQr&autoStart=1&captions=1&navigation=1&playButton=1&randomize=1&speed=3&transition=fade&transitionSpeed=2" width="800" height="600" frameborder="no" scrolling="no"></iframe>' }}></div>
+                            <SmugMugGallery id={id}/>
                         </Grid.Column>
                         <Grid.Column width={3}>
                             <Header as="h2">Details</Header>
