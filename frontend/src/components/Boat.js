@@ -156,7 +156,7 @@ const Boat = ({ id }) => {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={13}>
-                            <ImageCarousel images={boat.images} />
+                            (/*<ImageCarousel images={boat.images} />*/)
                         </Grid.Column>
                         <Grid.Column width={3}>
                             <Header as="h2">Details</Header>
