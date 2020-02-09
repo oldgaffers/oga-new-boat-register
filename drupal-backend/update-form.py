@@ -23,8 +23,6 @@ def updateQuestion(form, qid, field, newValue):
     url = "http://eu-api.jotform.com/form/%s/question/%s?apikey=%s" % (form, qid, api_key)
     data = {"question["+field+"]": newValue}
     r = requests.post(url, data=data)
-    #data = "question["+field+"]="+newValue
-    #r = requests.post(url, headers={'Content-Type':'application/x-www-form-urlencoded'}, data=data)
     print(r.text)
     return r
 
