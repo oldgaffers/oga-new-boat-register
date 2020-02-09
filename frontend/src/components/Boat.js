@@ -7,6 +7,7 @@ import Friendly from './Friendly.js';
 import RigAndSails from './RigAndSails';
 import ImageCarousel from './ImageCarousel';
 import ListItems from "./boat-utils";
+import SmugMugGallery from './SmugMugGallery';
 
 const boatQuery = (id) => gql`{
     boat(id:${id}) {
@@ -156,7 +157,7 @@ const Boat = ({ id }) => {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={13}>
-                            <ImageCarousel images={boat.images} />
+                            <SmugMugGallery id={id}/>
                         </Grid.Column>
                         <Grid.Column width={3}>
                             <Header as="h2">Details</Header>
