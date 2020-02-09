@@ -207,11 +207,11 @@ const builtBoatFilter = (filters) => {
     });
     if(filters.minYear || filters.maxYear) {
         if(filters.minYear) {
-            wheres += " AND y.field_year_built_value >= ?"
+            wheres += " AND fyear_built.field_year_built_value >= ?"
             data.push(filters.minYear);
         }
         if(filters.maxYear) {
-            wheres += " AND y.field_year_built_value <= ?"
+            wheres += " AND fyear_built.field_year_built_value <= ?"
             data.push(filters.maxYear);
         }
     }
@@ -246,7 +246,7 @@ const numFilteredBoats = async (db, filters) => {
         }
     });
     if(filters.minYear || filters.maxYear) {
-        joins += ` JOIN field_data_field_year_built y ON n.nid = y.entity_id`;
+        joins += ` JOIN field_data_field_year_built fyear_built ON n.nid = fyear_built.entity_id`;
     }
     const {data, wheres} = builtBoatFilter(filters);
     const query = `SELECT count(*) as num FROM node n ${joins} WHERE type='boat' AND status=1 ${wheres}`;
