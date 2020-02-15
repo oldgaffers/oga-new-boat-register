@@ -387,7 +387,7 @@ const getImages = async (db, id) => {
        field_copyright_value as copyright
        FROM field_data_field_boat_image i 
        JOIN file_managed f ON i.field_boat_image_fid = f.fid 
-       JOIN field_data_field_copyright c ON c.entity_id = f.fid
+       LEFT JOIN field_data_field_copyright c ON c.entity_id = f.fid
        WHERE i.entity_id=?`, [id]);
     if (l.length > 0) {
         return l;
