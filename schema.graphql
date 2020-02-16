@@ -91,6 +91,7 @@ type Boat {
    class:ClassOfBoat
    builder:Builder
    currentOwnership:[OwnerShip]
+   albumKey:String
 }
 
 type SailDimensions {

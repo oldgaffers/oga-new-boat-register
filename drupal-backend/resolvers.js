@@ -1,4 +1,5 @@
 const util = require('util');
+const axios = require('axios')
 
 // found an image with a # in the name - this fixes it.
 const urlMangle = (u) => {
@@ -109,7 +110,23 @@ const boat = async (_, {id}, context) => {
    } catch(e) {
       console.log('error in getting boat data', e);
    }
+   b.albumKey = await getAlbumKey(id);
    return b;
+}
+
+const getAlbumKey = async (id) => {
+   const api_key = process.env.SMUGMUG_API_KEY
+   const r = await axios.get(
+    'https://api.smugmug.com/api/v2!weburilookup',
+    {
+      headers: { Accept: 'application/json' },
+      params: {
+         APIKey: api_key,
+         WebUri: '//oga.smugmug.com/Boats/OGA-'+id     
+      }
+    }
+   );
+   return r.data.Response.Album.AlbumKey;
 }
 
 const handicap = async (_, {id}, context) => {
