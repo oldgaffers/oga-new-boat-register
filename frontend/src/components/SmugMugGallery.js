@@ -1,7 +1,7 @@
 import React, { useState, useEffect }from 'react';
 import Iframe from 'react-iframe'
 
-const url = 'https://juliancable.smugmug.com/frame/slideshow'
+const url = 'https://oga.smugmug.com/frame/slideshow'
 const queryString = 'autoStart=1&captions=1&navigation=1&playButton=1&randomize=1&speed=3&transition=fade&transitionSpeed=2'
 
 const map = {
@@ -13,10 +13,8 @@ const SmugMugGallery = ({ id }) => {
     const [key, setKey] = useState();
 
     useEffect(() => {
-        const url = 'https://api.smugmug.com/api/v2/album!search'
-            +'?Scope=https://api.smugmug.com/api/v2/folder/user/juliancable/Boats'
-            +'&Text='+id
-
+        const url = 'https://api.smugmug.com/api/v2!weburilookup?'
+                +'WebUri=https://oga.smugmug.com/Boats/OGA-'+id
         fetch(
             url,
             {
@@ -27,7 +25,7 @@ const SmugMugGallery = ({ id }) => {
           .then(res => res.json())
             .then(response => {
                 console.log(response);
-                setKey(map[id]);
+                setKey(response.Response.Album.AlbumKey);
                 })
             .catch(error => console.log(error));
     }, [id])
