@@ -111,7 +111,27 @@ const boat = async (_, {id}, context) => {
       console.log('error in getting boat data', e);
    }
    b.albumKey = await getAlbumKey(id);
+   if(b.albumKey) {
+      b.thumbNail = await getThumbNail(b.albumKey)
+   }
    return b;
+}
+
+const getThumbNail = async (albumKey) => {
+   const api_key = process.env.SMUGMUG_API_KEY
+   const r = await axios.get(
+    `https://api.smugmug.com/api/v2/album/${albumKey}!highlightimage`,
+    {
+      headers: { Accept: 'application/json' },
+      params: {
+         APIKey: api_key
+      }
+    }
+   );
+   if (r.data.Response.AlbumImage) {
+      return r.data.Response.AlbumImage.ThumbnailUrl;
+    }
+    return null;
 }
 
 const getAlbumKey = async (id) => {
