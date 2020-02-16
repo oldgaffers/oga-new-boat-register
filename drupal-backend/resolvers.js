@@ -126,7 +126,10 @@ const getAlbumKey = async (id) => {
       }
     }
    );
-   return r.data.Response.Album.AlbumKey;
+   if (r.data.Response.Album) {
+      return r.data.Response.Album.AlbumKey;
+    }
+    return null;
 }
 
 const handicap = async (_, {id}, context) => {
