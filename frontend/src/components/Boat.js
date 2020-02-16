@@ -157,7 +157,7 @@ const Boat = ({ id }) => {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={13}>
-                            <SmugMugGallery id={id}/>
+                            <SmugMugGallery key={boat.albumKey}/>
                         </Grid.Column>
                         <Grid.Column width={3}>
                             <Header as="h2">Details</Header>
