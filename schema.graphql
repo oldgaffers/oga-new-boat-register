@@ -92,6 +92,7 @@ type Boat {
    builder:Builder
    currentOwnership:[OwnerShip]
    albumKey:String
+   thumbNail:String
 }
 
 type SailDimensions {
