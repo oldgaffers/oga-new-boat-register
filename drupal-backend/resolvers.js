@@ -50,14 +50,14 @@ const processBoatSummaries = async (db, l) => {
    const boats = [];
    for (let i = 0; i < l.length; i++) {
       const b = l[i];
-      if (b.uri) {
-         b.image = urlMangle(b.uri.replace('public:/', 'https://oga.org.uk/sites/default/files'));
-         delete b.uri
-      }
       const builder = await getTargetField(db, "builder_name", b.builder);
       if(builder) {
          b.builder = {name: builder };
       }
+      const albumKey = await getAlbumKey(b.oga_no);
+      if(albumKey) {
+         b.image = await getThumbNail(albumKey)
+      }   
       boats.push({
          ...b,
          id: b.oga_no,
