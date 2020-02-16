@@ -34,7 +34,8 @@
     "start": "cd frontend; react-scripts start",
     "build": "cd frontend; react-scripts build",
     "test": "cd frontend; react-scripts test",
-    "eject": "cd frontend; react-scripts eject"
+    "eject": "cd frontend; react-scripts eject",
+    "post-build": "git add frontend/build/*; git commit . -m latest; git push"
   },
   "eslintConfig": {
     "extends": "react-app"
