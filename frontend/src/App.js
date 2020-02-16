@@ -11,6 +11,7 @@ import ApolloClient from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { createHttpLink } from "apollo-link-http";
 import { ApolloProvider } from '@apollo/react-hooks';
+import { useAuth0 } from "./react-auth0-spa";
 
 let backend = "http://localhost:4000/graphql";
 if(process.env.NODE_ENV==='production') {
@@ -35,7 +36,13 @@ const routes = {
 };
 
 const App = () => {
+  const { loading } = useAuth0();
   const routeResult = useRoutes(routes)
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return routeResult
 };
 

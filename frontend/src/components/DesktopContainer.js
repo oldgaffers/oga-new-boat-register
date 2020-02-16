@@ -7,6 +7,7 @@ import {
 } from 'semantic-ui-react'
 import Hero from "./Hero"
 import TopMenu from "./TopMenu"
+///import ErrorBoundary from "../ErrorBoundary";
 
 function imageBackground() {
     const url = 'https://oga.org.uk/sites/default/files/boat_images/alando_0.jpg'
@@ -23,7 +24,7 @@ const DesktopContainer = ({children}) => {
     const [fixed, setFixed] = useState(false);
     return (
     <Responsive minWidth={Responsive.onlyTablet.minWidth}>
-      <TopMenu fixed={fixed} />
+        <TopMenu fixed={fixed} />
         <Visibility
         style={imageBackground()}
         once={false}

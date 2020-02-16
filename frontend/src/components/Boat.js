@@ -5,13 +5,13 @@ import { useQuery } from '@apollo/react-hooks';
 import TopMenu from './TopMenu';
 import Friendly from './Friendly.js';
 import RigAndSails from './RigAndSails';
-import ImageCarousel from './ImageCarousel';
+// import ImageCarousel from './ImageCarousel';
 import ListItems from "./boat-utils";
 import SmugMugGallery from './SmugMugGallery';
 
 const boatQuery = (id) => gql`{
     boat(id:${id}) {
-        name prev_name
+        name prev_name albumKey
         year approximate_year_of_build
         place_built home_country home_port
         sail_no ssr_no nhsr_no fishing_no call_sign
@@ -157,7 +157,7 @@ const Boat = ({ id }) => {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column width={13}>
-                            <SmugMugGallery key={boat.albumKey}/>
+                            <SmugMugGallery albumKey={boat.albumKey}/>
                         </Grid.Column>
                         <Grid.Column width={3}>
                             <Header as="h2">Details</Header>
