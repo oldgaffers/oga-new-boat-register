@@ -4,17 +4,13 @@ import Iframe from 'react-iframe'
 const url = 'https://oga.smugmug.com/frame/slideshow'
 const queryString = 'autoStart=1&captions=1&navigation=1&playButton=1&randomize=1&speed=3&transition=fade&transitionSpeed=2'
 
-const map = {
-    2148: 'smhdQr'
-};
-
 const SmugMugGallery = ({ id }) => {
 
     const [key, setKey] = useState();
 
     useEffect(() => {
         const url = 'https://api.smugmug.com/api/v2!weburilookup?'
-                +'WebUri=https://oga.smugmug.com/Boats/OGA-'+id
+                +'WebUri=//oga.smugmug.com/Boats/OGA-'+id
         fetch(
             url,
             {
