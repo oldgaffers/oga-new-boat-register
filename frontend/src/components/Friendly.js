@@ -8,9 +8,9 @@ import {
 } from 'semantic-ui-react'
 
 const Friendly = () => (
-  <Segment inverted vertical style={{ padding: '5em 0em' }}>
+  <Segment vertical style={{ padding: '5em 0em', color: 'white', backgroundColor: '#002E50' }}>
     <Container>
-      <Grid divided inverted stackable>
+      <Grid divided stackable>
         <Grid.Row>
           <Grid.Column width={3}>
             <Header inverted as='h4' content='Links' />
@@ -38,7 +38,7 @@ const Friendly = () => (
             </List>
           </Grid.Column>
           <Grid.Column width={10}>
-            <Header as='h4' inverted>
+            <Header inverted as='h4'>
               The Friendly Association
             </Header>
             <p>
