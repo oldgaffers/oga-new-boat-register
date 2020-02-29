@@ -12,7 +12,7 @@ import { useAuth0 } from "../react-auth0-spa";
 const TopMenu = ({fixed}) => {
     const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
     return (
-        <Segment inverted>
+        <Segment style={{ backgroundColor: '#002E50' }}>
             <Menu
             fixed={fixed ? 'top' : null}
             inverted={!fixed}
