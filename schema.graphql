@@ -64,6 +64,7 @@ type Boat {
    sale_text:String
    price:String
    home_port:String
+   website:String
    location:String
    more_info:String
    moving_keel_type:String
