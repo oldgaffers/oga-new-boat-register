@@ -52,7 +52,7 @@ const boatFields = {
         'mainsail_type',
     ],
     value: [
-        'boat_name', 'boat_oga_no',
+        'boat_name', 'boat_oga_no', "website",
         'year_built', 'approximate_year_of_build_',
         'construction_method',
         'home_port', 'location', 'place_built', 'port_reg',
