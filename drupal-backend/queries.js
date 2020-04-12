@@ -70,6 +70,7 @@ const boatFields = {
 
 const renames = {
     approximate_year_of_build_: 'approximate_year_of_build',
+    year_built: "year",
     fish_no: 'fishing_no',
     boat_image: 'image',
     boat_name: 'name',
