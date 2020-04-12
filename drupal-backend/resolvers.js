@@ -110,7 +110,11 @@ const boat = async (_, {id}, context) => {
    } catch(e) {
       console.log('error in getting boat data', e);
    }
-   b.albumKey = await getAlbumKey(id);
+   try {
+      b.albumKey = await getAlbumKey(id);
+   } catch(e) {
+      console.log('error in getting boat image data', e);
+   }
    if(b.albumKey) {
       b.thumbNail = await getThumbNail(b.albumKey)
    }

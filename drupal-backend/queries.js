@@ -45,6 +45,9 @@ const boatFields = {
         'draft', 'depth', 'draft_keel_down', 'draft_keel_up', 'beam',
         'length_on_waterline', 'length_over_spars', 'length_overall',
     ],
+    url: [
+        "boat_website"
+    ],
     tid: [
         'rig_type', 'hull_type', 'construction_material',
         'design_class', 'generic_type',
@@ -52,7 +55,7 @@ const boatFields = {
         'mainsail_type',
     ],
     value: [
-        'boat_name', 'boat_oga_no', "website",
+        'boat_name', 'boat_oga_no',
         'year_built', 'approximate_year_of_build_',
         'construction_method',
         'home_port', 'location', 'place_built', 'port_reg',
@@ -70,7 +73,8 @@ const renames = {
     fish_no: 'fishing_no',
     boat_image: 'image',
     boat_name: 'name',
-    boat_oga_no: 'oga_no'
+    boat_oga_no: 'oga_no',
+    boat_website: 'website'
 };
 
 const buildFields = (fieldMap) => {
@@ -184,6 +188,9 @@ const fieldMappings = {
         rigType: { field: "rig_type" },
         sailType: { field: "mainsail_type" },
         genericType: { field: "generic_type" }
+    },
+    url: {
+        website: { field: "boat_website" }
     }
 };
 
@@ -276,7 +283,8 @@ const join_rule = {
     "generic_type": "tid", 
     "mainsail_type": "tid", 
     "design_class": "tid", 
-    "construction_material": "tid"
+    "construction_material": "tid",
+    "website": "url"
 }
 
 const fieldsForFilters = {
