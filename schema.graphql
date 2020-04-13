@@ -207,11 +207,13 @@ type Owner {
 type Builder {
   id: ID!
   name: String
+  description: String
 }
 
 type Designer {
   id: ID!
   name: String
+  description: String
 }
 
 scalar RigType
