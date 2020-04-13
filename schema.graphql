@@ -1,207 +1,217 @@
 type Query {
-   boat(id:Int):Boat
-   handicap(id:Int):HandicapDetails
-   boats(
-      page:Int, boatsPerPage:Int,
-      name:String, oga_no:Int,
-      rigType:RigType, sailType:SailType,
-      minYear:Int, maxYear:Int,
-      constructionMaterial:ConstructionMaterial,
-      genericType:GenericType, designClass:String,
-      builder:String, designer:String,
-      sortBy:String, reverse:Boolean,
-      has_images:Boolean, for_sale:Boolean
-   ):BoatPages
-   designers:[Designer]
-   builders:[Builder]
-   owners:[Owner]
-   ownerships:[OwnerShip]
-   ownershipsByBoat(id: ID!):[OwnerShip]
-   rigTypes:[RigType]
-   sailTypes:[SailType]
-   classNames:[String]
-   genericTypes:[GenericType]
-   constructionMaterials:[ConstructionMaterial]
-   picLists:PicLists
-   boatNames:[String]
+  boat(id: Int): Boat
+  handicap(id: Int): HandicapDetails
+  boats(
+    page: Int
+    boatsPerPage: Int
+    name: String
+    oga_no: Int
+    rigType: RigType
+    sailType: SailType
+    minYear: Int
+    maxYear: Int
+    constructionMaterial: ConstructionMaterial
+    genericType: GenericType
+    designClass: String
+    builder: String
+    designer: String
+    sortBy: String
+    reverse: Boolean
+    has_images: Boolean
+    for_sale: Boolean
+  ): BoatPages
+  designers: [Designer]
+  builders: [Builder]
+  owners: [Owner]
+  ownerships: [OwnerShip]
+  ownershipsByBoat(id: ID!): [OwnerShip]
+  rigTypes: [RigType]
+  sailTypes: [SailType]
+  classNames: [String]
+  genericTypes: [GenericType]
+  constructionMaterials: [ConstructionMaterial]
+  picLists: PicLists
+  boatNames: [String]
 }
 
 type Mutation {
-   addBoat(name:String, class:String): Boat
+  addBoat(name: String, class: String): Boat
 }
 
 type PicLists {
-   rigTypes:[RigType]
-   sailTypes:[SailType]
-   classNames:[String]
-   genericTypes:[GenericType]
-   constructionMaterials:[ConstructionMaterial]
+  rigTypes: [RigType]
+  sailTypes: [SailType]
+  classNames: [String]
+  genericTypes: [GenericType]
+  constructionMaterials: [ConstructionMaterial]
 }
 
 type Boat {
-   id:ID!
-   short_desc:String
-   full_desc:String
-   draft:Float
-   depth:Float
-   draft_keel_down:Float
-   draft_keel_up:Float
-   length_on_waterline:Float
-   length_over_spars:Float
-   length_overall:Float
-   beam:Float
-   rig_type:String
-   hull_type:String
-   construction_material:String
-   propulsion:PropulsionDetails
-   spar_material:String
-   home_country:String
-   call_sign:String
-   construction_method:String
-   current_function:String
-   fishing_no:String
-   for_sale:String
-   sale_text:String
-   price:String
-   home_port:String
-   website:String
-   location:String
-   more_info:String
-   moving_keel_type:String
-   moving_keel:String
-   moving_keel_weight:Int
-   nhsr_no:String
-   nsbr_no:String
-   off_reg_no:String
-   original_function:String
-   other_registries:String
-   ownerships_notes:String
-   place_built:String
-   port_reg:String
-   prev_name:String
-   reference:String
-   sail_no:String
-   special_tag:String
-   ssr_no:String
-   oga_no:Int
-   name:String
-   images:[Image]
-   year:Int
-   approximate_year_of_build:String
-   previousNames:String
-   class:ClassOfBoat
-   builder:Builder
-   currentOwnership:[OwnerShip]
-   albumKey:String
-   thumbNail:String
+  id: ID!
+  short_desc: String
+  full_desc: String
+  draft: Float
+  depth: Float
+  draft_keel_down: Float
+  draft_keel_up: Float
+  length_on_waterline: Float
+  length_over_spars: Float
+  length_overall: Float
+  beam: Float
+  rig_type: String
+  hull_type: String
+  construction_material: String
+  propulsion: PropulsionDetails
+  spar_material: String
+  home_country: String
+  call_sign: String
+  construction_method: String
+  current_function: String
+  fishing_no: String
+  for_sale: String
+  sale_text: String
+  price: String
+  home_port: String
+  website: String
+  location: String
+  more_info: String
+  moving_keel_type: String
+  moving_keel: String
+  moving_keel_weight: Int
+  nhsr_no: String
+  nsbr_no: String
+  off_reg_no: String
+  original_function: String
+  other_registries: String
+  ownerships_notes: String
+  place_built: String
+  port_reg: String
+  prev_name: String
+  reference: String
+  sail_no: String
+  special_tag: String
+  ssr_no: String
+  oga_no: Int
+  name: String
+  images: [Image]
+  year: Int
+  year_registered: Int
+  approximate_year_of_build: String
+  previousNames: String
+  class: ClassOfBoat
+  builder: Builder
+  currentOwnership: [OwnerShip]
+  albumKey: String
+  thumbNail: String
 }
 
 type SailDimensions {
-   foot:Float
-   leach:Float
-   luff:Float
-   head:Float
+  foot: Float
+  leach: Float
+  luff: Float
+  head: Float
 }
 
 type TopSailDimensions {
-   luff:Float
-   perpendicular:Float
+  luff: Float
+  perpendicular: Float
 }
 
 type HandicapDetails {
-   oga_no:Int
-   calculated_thcf:Float
-   no_head_sails:Boolean 
-   sailarea:Float 
-   down_wind_sail:SailDimensions
-   jib:SailDimensions
-   staysail:SailDimensions
-   fore_triangle_base:Float 
-   fore_triangle_height:Float 
-   foremast:SailDimensions
-   topsail:TopSailDimensions
-   mizzen_topsail:TopSailDimensions
-   foretopsail:TopSailDimensions
-   main:SailDimensions
-   mizzen:SailDimensions
+  oga_no: Int
+  calculated_thcf: Float
+  thcf: Float
+  no_head_sails: Boolean
+  sailarea: Float
+  down_wind_sail: SailDimensions
+  jib: SailDimensions
+  staysail: SailDimensions
+  fore_triangle_base: Float
+  fore_triangle_height: Float
+  foremast: SailDimensions
+  topsail: TopSailDimensions
+  mizzen_topsail: TopSailDimensions
+  foretopsail: TopSailDimensions
+  main: SailDimensions
+  mizzen: SailDimensions
 }
 
 type PropulsionDetails {
-   engine_fuel:String
-   engine_position:String
-   engine_date:String
-   engine_make:String
-   engine_power:Float
-   hp:Float
-   previous_engine:String
-   propellor_type:String
-   propellor_position:String
-   propellor_blades:Int
+  engine_fuel: String
+  engine_position: String
+  engine_date: String
+  engine_make: String
+  engine_power: Float
+  hp: Float
+  previous_engine: String
+  propellor_type: String
+  propellor_position: String
+  propellor_blades: Int
 }
 
 type BoatSummary {
-   id:ID!
-   oga_no:Int
-   name:String
-   image:String
-   year_built:Int
-   class:ClassOfBoat
-   builder:Builder
-   place_built:String
-   home_port:String
-   prev_name:String
-   for_sale:Boolean
-   short_desc:String,
-   sale_text:String
-   price:String
+  id: ID!
+  oga_no: Int
+  name: String
+  image: String
+  year_built: Int
+  class: ClassOfBoat
+  builder: Builder
+  place_built: String
+  home_port: String
+  prev_name: String
+  for_sale: Boolean
+  short_desc: String
+  sale_text: String
+  price: String
 }
 
 type ClassOfBoat {
-   id:ID!
-   name:String
-   rigType:RigType
-   mainsailType:SailType
-   designer:Designer
-   hullType:String
-   genericType:GenericType
+  id: ID!
+  name: String
+  rigType: RigType
+  mainsailType: SailType
+  designer: Designer
+  hullType: String
+  genericType: GenericType
 }
 
 type BoatPages {
-    # The total number of boats
-    totalCount: Int!
-    boats: [BoatSummary!]
-    # Information for paginating this connection
-    hasNextPage: Boolean!
-    hasPreviousPage: Boolean!
+  # The total number of boats
+  totalCount: Int!
+  boats: [BoatSummary!]
+  # Information for paginating this connection
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
 }
 
 type Image {
-   uri:String
-   copyright:String
-   height:Int
-   width:Int
-   title:String
-   alt:String
+  uri: String
+  copyright: String
+  height: Int
+  width: Int
+  title: String
+  alt: String
 }
 
 type OwnerShip {
-   owner:Owner
-   sixtyFourths:Int
+  owner: Owner
+  sixtyFourths: Int
 }
 
 type Owner {
-   id:ID!
-   name:String
+  id: ID!
+  name: String
 }
 
 type Builder {
-   id:ID!
-   name:String
+  id: ID!
+  name: String
 }
 
 type Designer {
-   id:ID!
-   name:String
+  id: ID!
+  name: String
 }
 
 scalar RigType
