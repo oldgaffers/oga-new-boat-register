@@ -44,7 +44,7 @@ const getClass = async (db, boat) => {
       boat.designer
     );
     if (name || description) {
-      c.designer = { name, description, id: boat.designer };
+      c.designer = { name, description, id: boat.designer }; // added
     }
     delete boat.designer;
   }
