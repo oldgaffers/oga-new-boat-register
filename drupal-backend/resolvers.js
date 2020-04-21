@@ -44,7 +44,7 @@ const getClass = async (db, boat) => {
       boat.designer
     );
     if (name || description) {
-      c.designer = { name, description };
+      c.designer = { name, description, id: boat.designer };
     }
     delete boat.designer;
   }
@@ -65,7 +65,7 @@ const processBoatSummaries = async (db, l) => {
     const b = l[i];
     const builder = await getTargetField(db, "builder_name", b.builder);
     if (builder) {
-      b.builder = { name: builder };
+      b.builder = { name: builder, id: b.builder };
     }
     const albumKey = await getAlbumKey(b.oga_no);
     if (albumKey) {
