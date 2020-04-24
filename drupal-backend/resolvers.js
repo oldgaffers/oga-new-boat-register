@@ -65,7 +65,7 @@ const processBoatSummaries = async (db, l) => {
     const b = l[i];
     const builder = await getTargetField(db, "builder_name", b.builder);
     if (builder) {
-      b.builder = { name: builder, id: b.builder };
+      b.builder = { name: builder};
     }
     const albumKey = await getAlbumKey(b.oga_no);
     if (albumKey) {
@@ -117,7 +117,7 @@ const boat = async (_, { id }, context) => {
         b.builder
       );
       if (name || description) {
-        b.builder = { name, description };
+        b.builder = { name, description, id: b.builder };
       }
     }
     const fd = getFullDescription(db, b.entity_id);
