@@ -326,7 +326,7 @@ const Query = {
     taxonomy(context.db, "construction_material"),
   picLists: piclists,
   boatNames: boatNames,
-  thumb: boatThumb
+  thumb: boatThumb,
   albumThumb: albumThumb
 };
 
