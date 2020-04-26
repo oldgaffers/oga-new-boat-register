@@ -317,7 +317,7 @@ const Query = {
   constructionMaterials: async (_p, _, context) =>
     taxonomy(context.db, "construction_material"),
   picLists: piclists,
-  boatNames: boatNames
+  boatNames: boatNames,
   thumb: boatThumb
 };
 
