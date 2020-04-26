@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Button, Dropdown, Form } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import SearchPeopleAndBoats from './SearchPeopleAndBoats'
+import SearchBoatNames from './searchboatnames';
+import SearchBuilders from './searchbuilders';
+import SearchDesigners from './searchdesigners';
 
 const ANY = '- Any -';
 
@@ -25,56 +27,6 @@ for (let i = 6; i <= 48; i += 6) {
     pageOptions.push({ key: i, text: `${i}`, value: i });
 };
 
-const SearchBoatNames = ({onChange, onSearchChange, value}) => {
-
-    const { loading, error, data } = useQuery(gql`{boatNames}`);
-
-    if (loading) return <p>Loading...</p>
-    if (error) return <p>Error :(TBD)</p>;
-
-    const choices = data.boatNames.map(name => { return {name:name}});
-
-    return (<SearchPeopleAndBoats
-        onResultSelect={onChange}
-        onSearchChange={onSearchChange}
-        choices={choices}
-        label="Boat Name (incl. previous names)"
-        value={value}
-    />);
-}
-
-const SearchBuilders = ({onChange, onSearchChange, value}) => {
-
-    const { loading, error, data } = useQuery(gql`{builders{id name}}`);
-
-    if (loading) return <p>Loading...</p>
-    if (error) return <p>Error :(TBD)</p>;
-
-    return (<SearchPeopleAndBoats 
-        onResultSelect={onChange}
-        onSearchChange={onSearchChange}
-        choices={data.builders}
-        label="Builders Name"
-        value={value}
-    />);
-}
-
-const SearchDesigners = ({onChange, onSearchChange, value}) => {
-
-    const { loading, error, data } = useQuery(gql`{designers{id name}}`);
-
-    if (loading) return <p>Loading...</p>
-    if (error) return <p>Error :(TBD)</p>;
-
-    return (<SearchPeopleAndBoats 
-        onResultSelect={onChange}
-        onSearchChange={onSearchChange}
-        choices={data.designers}
-        label="Designers Name"
-        value={value}
-    />);
-}
-
 const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filters}) => {
     
     const [reverse, setReverse] = useState(false);
@@ -82,22 +34,22 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
     const [designer, setDesigner] = useState('');
     const [boatName, setBoatName] = useState('');
 
-    const { loading, error, data } = useQuery(gql(`{picLists{
-        rigTypes
-        sailTypes
-        classNames
-        genericTypes
-        constructionMaterials        
-    }}`));
+    const { loading, error, data } = useQuery(gql(`query piclists{
+        rig_type { description name }
+        sail_type { description name }
+        design_class { name }
+        generic_type { description name }
+        construction_material { description name }
+    }`));
 
     if (loading) return <p>Loading...</p>
-    if (error) return <p>Error :(TBD)</p>;
+    if (error) return <p>Error: can't load pick lists</p>;
     if (rigTypeOptions.length <= 1) {
-        data.picLists.rigTypes.forEach(v => rigTypeOptions.push({ key: v, text: v, value: v }));
-        data.picLists.sailTypes.forEach(v => mainSailOptions.push({ key: v, text: v, value: v }));
-        data.picLists.classNames.forEach(v => designClassOptions.push({ key: v, text: v, value: v }));
-        data.picLists.genericTypes.forEach(v => genericTypeOptions.push({ key: v, text: v, value: v }));
-        data.picLists.constructionMaterials.forEach(v => materialOptions.push({ key: v, text: v, value: v }));
+        data.rig_type.forEach(v => rigTypeOptions.push({ key: v, text: v, value: v }));
+        data.sail_type.forEach(v => mainSailOptions.push({ key: v, text: v, value: v }));
+        data.design_class.forEach(v => designClassOptions.push({ key: v, text: v, value: v }));
+        data.generic_type.forEach(v => genericTypeOptions.push({ key: v, text: v, value: v }));
+        data.construction_material.forEach(v => materialOptions.push({ key: v, text: v, value: v }));
     }
 
     const pageSizeChanged = (size) => {
@@ -207,7 +159,7 @@ const SearchAndFilterBoats = ({onReset, onUpdate, onPageSize, boatsPerPage, filt
                 </Form.Field>
                 <Form.Field>
                     <label>Construction material</label>
-                    <Dropdown selection onChange={(_,{value})=>filterChanged('constructionMaterial',value)}
+                    <Dropdown selection onChange={(_,{value})=>filterChanged('construction_material',value)}
                         value={filters.constructionMaterial?filters.constructionMaterial:ANY}
                         options={materialOptions}
                     />

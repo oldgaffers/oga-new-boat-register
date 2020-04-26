@@ -36,27 +36,3 @@
     transform: rotate(360deg);
   }
 }
-
-.Br-tall {
-  height:fit-content
-}
-
-.Br-copyright-outer {
-  color:whitesmoke;
-  height: inherit
-}
-
-.Br-copyright-inner {
-  bottom:10px; left:10px; 
-  position:absolute
-}
-
-.Br-hero-sub {
-  width: fit-content;
-  color:white;
-  font-size: 1.8em;
-  font-weight: normal;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-  background-color: rgba(0, 0, 0, 0.24)
-}

@@ -1,19 +1,23 @@
-import React, { useEffect } from 'react';
-import Friendly from './Friendly.js';
-import WeAre from './WeAre.js';
-import ResponsiveContainer from "./ResponsiveContainer";
+import React from 'react';
+import { Dropdown, Form } from 'semantic-ui-react';
 
-const Main = () => {
-  useEffect(() => {
-    document.title = "OGA Boat Register";
-  });
-
+function Main() {
     return (
-    <ResponsiveContainer>
-        <WeAre/>
-        <Friendly/>
-      </ResponsiveContainer>
-  );
+    <div>
+        <Form>
+            <Dropdown
+            placeholder='Select Friend'
+    fluid
+    selection
+    options={[
+        {key: 1, text: 'a', value: 'A'},
+        {key: 2, text: 'b', value: 'B'},
+        {key: 3, text: 'c', value: 'C'},
+    ]}            />
+                
+        </Form>
+
+    </div>); // TODO iframe with browse inside
 }
 
 export default Main

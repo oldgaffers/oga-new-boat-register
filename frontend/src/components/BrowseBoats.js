@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Boats from './Boats.js';
 import { Responsive, CardGroup, Container, Divider, Header, Pagination } from 'semantic-ui-react';
-import TopMenu from './TopMenu.js';
-import Friendly from './Friendly.js';
-import SearchAndFilterBoats from './SearchAndFilterBoats.js';
+import SearchAndFilterBoats from './searchandfilterboats';
+import Boats from './boats';
 
 const DEFAULT_FILTERS = {
   name:null,
@@ -22,7 +20,59 @@ const DEFAULT_FILTERS = {
   sortBy:'name',
   reverse:null
 };
- 
+
+// TODO for_sale previous names, design class
+
+function makeWhere(filters) {
+  let r = {
+    _and:[
+      { year: { _gte: filters.minYear } },
+      { year: { _lte: filters.maxYear } }
+    ],
+  };
+  Object.keys(filters).forEach((key) => {
+    if (filters[key]) {
+      switch (key) {
+        case 'name':
+          r.name = { _or: [
+            { previous_names: {_contains: filters.name }},
+            { name: { _ilike: `%${filters.name}%` } }
+          ] };
+          break;
+        case 'oga_no':
+          r.oga_no = { _eq: filters.oga_no }
+          break;
+        case 'designer':
+          r.designerByDesigner = { name: { _ilike: `%${filters.designer}%` } }
+          break;
+        case 'builder':
+          r.builderByBuilder = { name: { _ilike: `%${filters.builder}%` } }
+          break;
+        case 'has_images':
+          r.image_key = { _is_null: filters.has_images };
+          break;
+        case 'rigType':
+          r.rigTypeByRigType = { name: { _eq: filters.rigType } }
+          break;
+        case 'sailType':
+          r.sailTypeBySailType = { name: { _eq: filters.sailType } }
+          break;
+        case 'genericType':
+          r.genericTypeByGenericType = { name: { _eq: filters.genericType } }
+          break;
+        case 'designClass':
+          r.designClassByDesignClass = { name: { _eq: filters.designClass } }
+          break;
+        case 'constructionMaterial':
+          r.constructionMaterialByConstructionMaterial = { name: { _eq: filters.constructionMaterial } }
+          break;
+        default:
+          // omit
+      }
+    }
+  });
+  return r;
+}
 const BrowseBoats = () => {
 
   useEffect(() => {
@@ -61,7 +111,6 @@ const BrowseBoats = () => {
 
   return (
   <Responsive minWidth={Responsive.onlyTablet.minWidth}>
-    <TopMenu/>
     <Container>
       <Header as="h1">Browse Boats</Header>
       <Header as="h3">
@@ -83,7 +132,14 @@ const BrowseBoats = () => {
       />
       <Divider hidden />
     <CardGroup centered>
-      <Boats page={activePage} filters={filters} boatsPerPage={boatsPerPage} onLoad={onLoad} />
+      <Boats
+        page={activePage}
+        boatsPerPage={boatsPerPage}
+        where={makeWhere(filters)}
+        sortField={filters.sortBy}
+        sortDirection={filters.reverse?'desc':'asc'}
+        onLoad={onLoad}
+      />
     </CardGroup>
     <Divider hidden />
       <Pagination activePage={activePage} onPageChange={onChange}
@@ -91,9 +147,8 @@ const BrowseBoats = () => {
       />
       </Container>
       <Divider hidden />
-    <Friendly/>
   </Responsive>
   );
 };
 
-export default BrowseBoats;
+export default BrowseBoats
