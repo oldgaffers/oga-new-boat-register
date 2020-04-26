@@ -1,5 +1,5 @@
 type Query {
-  boat(id: Int): Boat
+  b0at(id: Int): Boat
   handicap(id: Int): HandicapDetails
   boats(
     page: Int
@@ -32,7 +32,7 @@ type Query {
   constructionMaterials: [ConstructionMaterial]
   picLists: PicLists
   boatNames: [String]
-  thumb(id: ID!): String
+  thumb(id: ID): String
 }
 
 type Mutation {

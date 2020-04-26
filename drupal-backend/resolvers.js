@@ -306,7 +306,7 @@ const boatNames = async (_p, _, context) => {
 
 const Query = {
   boats: pagedBoats,
-  boat: boat,
+  b0at: boat,
   handicap: handicap,
   designers: designers,
   builders: builders,
