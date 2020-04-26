@@ -157,6 +157,14 @@ const boatThumb = async (_, { id }, context) => {
   }
 };
 
+const albumThumb = async (_, { id }, context) => {
+  try {
+    return getThumbNail(id);
+  } catch (e) {
+    console.log("error in getting boat image data", e);
+  }
+};
+
 const getThumbNail = async albumKey => {
   const api_key = process.env.SMUGMUG_API_KEY;
   const r = await axios.get(
@@ -319,6 +327,7 @@ const Query = {
   picLists: piclists,
   boatNames: boatNames,
   thumb: boatThumb
+  albumThumb: albumThumb
 };
 
 const Mutation = {

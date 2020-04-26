@@ -33,6 +33,7 @@ type Query {
   picLists: PicLists
   boatNames: [String]
   thumb(id: ID): String
+  albumThumb(id: ID): String
 }
 
 type Mutation {
