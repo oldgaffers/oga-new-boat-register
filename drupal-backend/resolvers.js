@@ -44,7 +44,7 @@ const getClass = async (db, boat) => {
       boat.designer
     );
     if (name || description) {
-      c.designer = { name, description, id: boat.designer }; // added
+      c.designer = { name, description, id: boat.designer };
     }
     delete boat.designer;
   }
@@ -65,7 +65,7 @@ const processBoatSummaries = async (db, l) => {
     const b = l[i];
     const builder = await getTargetField(db, "builder_name", b.builder);
     if (builder) {
-      b.builder = { name: builder};
+      b.builder = { name: builder, id: b.builder };
     }
     const albumKey = await getAlbumKey(b.oga_no);
     if (albumKey) {
@@ -117,7 +117,7 @@ const boat = async (_, { id }, context) => {
         b.builder
       );
       if (name || description) {
-        b.builder = { name, description, id: b.builder };
+        b.builder = { name, description };
       }
     }
     const fd = getFullDescription(db, b.entity_id);
@@ -146,6 +146,15 @@ const boat = async (_, { id }, context) => {
     b.thumbNail = await getThumbNail(b.albumKey);
   }
   return b;
+};
+
+const boatThumb = async (_, { id }, context) => {
+  try {
+    const albumKey = await getAlbumKey(id);
+    return getThumbNail(albumKey);
+  } catch (e) {
+    console.log("error in getting boat image data", e);
+  }
 };
 
 const getThumbNail = async albumKey => {
@@ -309,6 +318,7 @@ const Query = {
     taxonomy(context.db, "construction_material"),
   picLists: piclists,
   boatNames: boatNames
+  thumb: boatThumb
 };
 
 const Mutation = {
